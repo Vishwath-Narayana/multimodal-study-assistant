@@ -67,8 +67,10 @@ Planned end-state feature set (built incrementally by phase, see
 - Contradiction detection across sources
 - Evidence sufficiency checking and explicit abstention
 
-**Status:** none of the above are implemented yet. This repository currently
-contains only the project foundation (Phase 0) — see [Roadmap](#15-roadmap).
+**Status:** none of the above are implemented yet. Phase 1 (document
+ingestion — upload, parsing, structure-aware chunking) is complete; the
+conversational/generation features above depend on retrieval (Phase 2) and
+generation (Phase 3), which have not started — see [Roadmap](#15-roadmap).
 
 ## 5. Research Foundation
 
@@ -144,7 +146,7 @@ until experiments are actually run — see [Evaluation](#13-evaluation).
 |---|---|
 | Backend | Python 3.12, FastAPI |
 | Frontend | React, TypeScript, Vite, Tailwind CSS |
-| Document processing | Docling *(planned)* |
+| Document processing | Docling |
 | Embeddings | BAAI/bge-small-en-v1.5 *(planned)* |
 | Dense retrieval | FAISS *(planned)* |
 | Lexical retrieval | BM25 *(planned)* |
@@ -156,7 +158,7 @@ until experiments are actually run — see [Evaluation](#13-evaluation).
 | Backend tooling | uv, pytest, Ruff, mypy |
 | Frontend tooling | pnpm, oxlint |
 
-Nothing marked "planned" is implemented in Phase 0. This is a local-first
+Nothing marked "planned" is implemented yet. This is a local-first
 project deliberately without Kubernetes, microservices, Redis, Kafka,
 PostgreSQL, or cloud infrastructure — see
 [docs/decisions/ADR-002-local-first.md](docs/decisions/ADR-002-local-first.md).
@@ -218,7 +220,11 @@ cd frontend
 pnpm dev
 ```
 
-Then open `http://localhost:5173`.
+Then open `http://localhost:5173` and upload a PDF/DOCX/PPTX/HTML file —
+ingestion status and chunk count appear once processing completes. Run
+both servers together to try this; the frontend calls the backend at
+`http://localhost:8000` by default (override with `VITE_API_BASE_URL`),
+and the backend allows that origin via `CORS_ALLOWED_ORIGINS`.
 
 ## 12. Testing
 
@@ -260,7 +266,9 @@ seeds). See [docs/research/reproducibility.md](docs/research/reproducibility.md)
 ## 15. Roadmap
 
 See [docs/roadmap.md](docs/roadmap.md) for the full phase-by-phase plan.
-Current status: **Phase 0 — Project Foundation** (this commit series).
+Current status: **Phase 1 — Document Ingestion** complete. See
+[docs/architecture/ingestion.md](docs/architecture/ingestion.md) for what
+was built.
 
 ## 16. License
 
