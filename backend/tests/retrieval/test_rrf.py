@@ -6,7 +6,11 @@ from app.retrieval.rrf import RRFFusion
 
 def _candidate(chunk_id: str, rank: int, score: float = 0.0) -> RetrievalCandidate:
     return RetrievalCandidate(
-        chunk_id=chunk_id, document_id="doc-1", content=f"content-{chunk_id}", rank=rank, score=score
+        chunk_id=chunk_id,
+        document_id="doc-1",
+        content=f"content-{chunk_id}",
+        rank=rank,
+        score=score,
     )
 
 

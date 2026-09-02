@@ -83,7 +83,7 @@ class IndexManifest:
         return json.dumps(asdict(self), indent=2, sort_keys=True)
 
     @classmethod
-    def from_json(cls, text: str) -> "IndexManifest":
+    def from_json(cls, text: str) -> IndexManifest:
         try:
             data = json.loads(text)
             return cls(**data)
@@ -105,7 +105,7 @@ class FaissIndexStore:
         index_dir: str | Path,
         chunk_target_tokens: int,
         chunk_overlap_tokens: int,
-    ) -> "FaissIndexStore":
+    ) -> FaissIndexStore:
         eligible = eligible_chunks(chunks)
         if not eligible:
             raise NoIndexedChunksError(
@@ -170,7 +170,7 @@ class FaissIndexStore:
             self.index_dir / _MANIFEST_FILENAME
         ).exists()
 
-    def load(self, chunks_by_id: dict[str, Chunk] | None = None) -> "FaissIndexStore":
+    def load(self, chunks_by_id: dict[str, Chunk] | None = None) -> FaissIndexStore:
         """Load a previously built index from disk. `chunks_by_id`, if
         given, lets callers supply fresh chunk content (e.g. for staleness
         checks); otherwise search results carry only what the id map + a

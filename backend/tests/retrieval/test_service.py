@@ -52,7 +52,12 @@ class FakeReranker:
 
 def _config(**overrides) -> RetrievalServiceConfig:
     base = dict(
-        bm25_top_k=10, dense_top_k=10, rrf_k=60, rrf_candidate_k=20, rerank_candidate_k=20, final_top_k=5
+        bm25_top_k=10,
+        dense_top_k=10,
+        rrf_k=60,
+        rrf_candidate_k=20,
+        rerank_candidate_k=20,
+        final_top_k=5,
     )
     base.update(overrides)
     return RetrievalServiceConfig(**base)
@@ -105,7 +110,9 @@ def test_dense_hyde_mode_uses_expanded_text_and_never_touches_bm25(service_parts
     bm25, dense = service_parts
     hyde = FakeQueryExpander(hypothetical_text="The mitochondria is the powerhouse of the cell.")
     service = RetrievalService(bm25, dense, hyde, RRFFusion(60), FakeReranker(), _config())
-    results, trace = service.retrieve("energy production in cells", RetrievalMode.DENSE_HYDE, top_k=1)
+    results, trace = service.retrieve(
+        "energy production in cells", RetrievalMode.DENSE_HYDE, top_k=1
+    )
     assert results[0].chunk_id == "c3"
     assert trace.hyde_query == "The mitochondria is the powerhouse of the cell."
     assert trace.hyde_model == "fake-hyde-model"
@@ -114,7 +121,9 @@ def test_dense_hyde_mode_uses_expanded_text_and_never_touches_bm25(service_parts
 
 def test_hybrid_rrf_hyde_bm25_gets_original_query_dense_gets_hyde_text(service_parts) -> None:
     bm25, dense = service_parts
-    hyde = FakeQueryExpander(hypothetical_text="Photosynthesis occurs in the chloroplasts of plant cells.")
+    hyde = FakeQueryExpander(
+        hypothetical_text="Photosynthesis occurs in the chloroplasts of plant cells."
+    )
     service = RetrievalService(bm25, dense, hyde, RRFFusion(60), FakeReranker(), _config())
     results, trace = service.retrieve("energy", RetrievalMode.HYBRID_RRF_HYDE, top_k=3)
     assert trace.hyde_query == "Photosynthesis occurs in the chloroplasts of plant cells."
@@ -126,7 +135,9 @@ def test_hybrid_rrf_hyde_bm25_gets_original_query_dense_gets_hyde_text(service_p
 
 def test_full_baseline_mode_reranks(service_parts) -> None:
     bm25, dense = service_parts
-    hyde = FakeQueryExpander(hypothetical_text="Photosynthesis occurs in the chloroplasts of plant cells.")
+    hyde = FakeQueryExpander(
+        hypothetical_text="Photosynthesis occurs in the chloroplasts of plant cells."
+    )
     service = RetrievalService(bm25, dense, hyde, RRFFusion(60), FakeReranker(), _config())
     results, trace = service.retrieve("photosynthesis", RetrievalMode.FULL_BASELINE, top_k=2)
     assert len(results) == 2
@@ -167,6 +178,8 @@ def test_invalid_mode_string_raises(service_parts) -> None:
 
 def test_default_top_k_uses_config(service_parts) -> None:
     bm25, dense = service_parts
-    service = RetrievalService(bm25, dense, None, RRFFusion(60), FakeReranker(), _config(final_top_k=2))
+    service = RetrievalService(
+        bm25, dense, None, RRFFusion(60), FakeReranker(), _config(final_top_k=2)
+    )
     results, _ = service.retrieve("photosynthesis", RetrievalMode.BM25)
     assert len(results) == 2

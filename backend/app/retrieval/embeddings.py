@@ -16,10 +16,14 @@ request.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from app.retrieval.errors import EmbeddingModelError
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 
 
 class EmbeddingProvider(ABC):
@@ -78,7 +82,7 @@ class BGEEmbeddingProvider(EmbeddingProvider):
     def __init__(self, model_name: str, batch_size: int = 32) -> None:
         self._model_name = model_name
         self._batch_size = batch_size
-        self._model = None  # lazy-loaded, then cached for the instance's lifetime
+        self._model: SentenceTransformer | None = None  # lazy-loaded, then cached
 
     def _ensure_loaded(self) -> None:
         if self._model is not None:

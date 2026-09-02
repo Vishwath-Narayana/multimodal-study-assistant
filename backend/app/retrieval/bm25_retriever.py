@@ -45,7 +45,7 @@ class BM25Retriever(Retriever):
             self._bm25 = None
 
     @classmethod
-    def from_chunks(cls, chunks: list[Chunk]) -> "BM25Retriever":
+    def from_chunks(cls, chunks: list[Chunk]) -> BM25Retriever:
         """Build a fresh index. Raises `NoIndexedChunksError` if, after
         applying the text-eligibility filter (`app.retrieval.corpus`),
         nothing is left to index."""
@@ -69,7 +69,7 @@ class BM25Retriever(Retriever):
         indexed = [_IndexedChunk(chunk=c, tokens=tokenize(c.content)) for c in deduped]
         return cls(indexed)
 
-    def rebuild(self, chunks: list[Chunk]) -> "BM25Retriever":
+    def rebuild(self, chunks: list[Chunk]) -> BM25Retriever:
         return BM25Retriever.from_chunks(chunks)
 
     @property

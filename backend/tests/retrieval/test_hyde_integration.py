@@ -29,7 +29,9 @@ def test_real_ollama_generates_a_hyde_passage() -> None:
     if not _ollama_reachable(settings.ollama_base_url):
         pytest.skip("Ollama is not reachable at the configured base URL.")
 
-    client = OllamaClient(settings.ollama_base_url, settings.hyde_model, settings.hyde_timeout_seconds)
+    client = OllamaClient(
+        settings.ollama_base_url, settings.hyde_model, settings.hyde_timeout_seconds
+    )
     expander = HyDEExpander(client, settings.hyde_max_tokens, settings.hyde_temperature)
     result = expander.expand("What is photosynthesis?")
     assert result.expanded_text

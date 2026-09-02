@@ -19,8 +19,8 @@ from app.retrieval.interfaces import (
     FusedCandidate,
     FusionStrategy,
     QueryExpander,
-    Reranker,
     RerankedCandidate,
+    Reranker,
     Retriever,
 )
 from app.retrieval.models import (
@@ -44,25 +44,25 @@ class RetrievalServiceConfig:
 
 
 def _candidate_to_result(candidate: RetrievalCandidate, source: RetrievalSource) -> RetrievalResult:
-    kwargs = {
-        "chunk_id": candidate.chunk_id,
-        "document_id": candidate.document_id,
-        "content": candidate.content,
-        "score": candidate.score,
-        "rank": candidate.rank,
-        "retrieval_source": source,
-        "page": candidate.page,
-        "section": candidate.section,
-        "parent_id": candidate.parent_id,
-        "metadata": candidate.metadata,
-    }
+    result = RetrievalResult(
+        chunk_id=candidate.chunk_id,
+        document_id=candidate.document_id,
+        content=candidate.content,
+        score=candidate.score,
+        rank=candidate.rank,
+        retrieval_source=source,
+        page=candidate.page,
+        section=candidate.section,
+        parent_id=candidate.parent_id,
+        metadata=candidate.metadata,
+    )
     if source == RetrievalSource.BM25:
-        kwargs["bm25_rank"] = candidate.rank
-        kwargs["bm25_score"] = candidate.score
+        result.bm25_rank = candidate.rank
+        result.bm25_score = candidate.score
     elif source == RetrievalSource.DENSE:
-        kwargs["dense_rank"] = candidate.rank
-        kwargs["dense_score"] = candidate.score
-    return RetrievalResult(**kwargs)
+        result.dense_rank = candidate.rank
+        result.dense_score = candidate.score
+    return result
 
 
 def _fused_to_result(candidate: FusedCandidate) -> RetrievalResult:

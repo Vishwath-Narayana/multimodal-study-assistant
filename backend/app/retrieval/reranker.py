@@ -8,14 +8,19 @@ returns the pool re-sorted by that score. Loaded once, reused across calls
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from app.retrieval.errors import RerankerModelError
-from app.retrieval.interfaces import FusedCandidate, Reranker, RerankedCandidate
+from app.retrieval.interfaces import FusedCandidate, RerankedCandidate, Reranker
+
+if TYPE_CHECKING:
+    from sentence_transformers import CrossEncoder
 
 
 class CrossEncoderReranker(Reranker):
     def __init__(self, model_name: str) -> None:
         self._model_name = model_name
-        self._model = None  # lazy-loaded once, then cached
+        self._model: CrossEncoder | None = None  # lazy-loaded once, then cached
 
     def _ensure_loaded(self) -> None:
         if self._model is not None:
