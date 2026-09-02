@@ -36,21 +36,30 @@ built, but the baseline pipeline (README §6) stops at reranking → generation
 
 ## 2. Ingestion Pipeline
 
+Status: **implemented for Phase 1** through structure-aware chunking and
+SQLite persistence — see [docs/architecture/ingestion.md](ingestion.md)
+for the actual pipeline, canonical model, and documented limitations.
+Embedding and FAISS indexing (below) are Phase 2, not yet implemented;
+perceptual-hash image dedup and VLM/OCR description are Phase 5.
+
 ```mermaid
 flowchart LR
-    Upload --> Parse[Docling parsing]
+    Upload --> Validate[Validate + SHA-256 hash]
+    Validate --> Parse[Docling parsing]
     Parse --> Extract[Text / tables / images / equations]
-    Extract --> Dedup[Perceptual-hash dedup for images]
-    Dedup --> Visual[VLM description + OCR]
-    Visual --> Chunk[Structure-aware chunking, ~512 tokens]
-    Chunk --> Embed[Embed chunks - bge-small-en-v1.5]
-    Embed --> Store[(SQLite metadata + FAISS index)]
+    Extract --> Chunk[Structure-aware chunking, ~512 tokens]
+    Chunk --> Store[(SQLite: documents, chunks)]
+    Store -.Phase 5.-> Dedup[Perceptual-hash dedup for images]
+    Store -.Phase 5.-> Visual[VLM description + OCR]
+    Store -.Phase 2.-> Embed[Embed chunks - bge-small-en-v1.5]
+    Embed -.Phase 2.-> Index[(FAISS index)]
 ```
 
-Each chunk retains provenance: source document, page/section/slide,
-chunk type (text/table/image/equation), and — for visual chunks — the
-original image path alongside its OCR text and VLM description (not a
-caption-only representation).
+Each chunk retains provenance: source document, page/section, chunk type
+(heading/paragraph/list/table/image/equation/code/caption), and — for
+image chunks — the extracted image path (where Docling provides the
+bytes; see ingestion.md for the HTML exception). OCR text and VLM
+descriptions are Phase 5 additions, not yet implemented.
 
 ## 3. Retrieval Pipeline
 

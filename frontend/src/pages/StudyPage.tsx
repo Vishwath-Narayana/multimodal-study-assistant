@@ -1,7 +1,12 @@
+import { useState } from "react";
 import { ChatPlaceholder } from "../components/ChatPlaceholder";
+import { IngestedDocuments } from "../components/IngestedDocuments";
 import { UploadPlaceholder } from "../components/UploadPlaceholder";
+import type { IngestionResult } from "../lib/api";
 
 export function StudyPage() {
+  const [documents, setDocuments] = useState<IngestionResult[]>([]);
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -10,7 +15,8 @@ export function StudyPage() {
           Upload documents, then ask grounded questions with citations.
         </p>
       </div>
-      <UploadPlaceholder />
+      <UploadPlaceholder onIngested={(result) => setDocuments((prev) => [result, ...prev])} />
+      <IngestedDocuments documents={documents} />
       <ChatPlaceholder />
     </div>
   );
