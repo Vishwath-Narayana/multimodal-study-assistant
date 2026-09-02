@@ -8,6 +8,16 @@ numbers ("3.14"). A full sentence boundary detector was judged out of scope
 for Phase 3 (spec: "if the implementation cannot reliably split a complex
 sentence, document the limitation rather than pretending it is perfect").
 
+Per the grounded prompt (`app.generation.prompts`), the model is told to
+place a `[chunk:...]` citation "immediately after the claim it supports" —
+in practice that citation lands right after the sentence's closing
+punctuation (e.g. "...energy. [chunk:c1] Next sentence..."), which a naive
+split-after-punctuation would attach to the *following* sentence instead of
+the one it actually supports. `_pull_citations_before_punctuation`
+rewrites `"<punct> [chunk:x] "` to `"[chunk:x]<punct> "` before splitting,
+so citation markers stay grouped with the sentence they were written to
+support.
+
 **Attribution per claim**: a claim's supporting chunks are (a) any chunk
 explicitly cited with `[chunk:...]` inside that claim, plus (b) any
 retrieved chunk whose lexical (Jaccard) overlap with the claim's tokens
@@ -29,12 +39,23 @@ from app.retrieval.models import RetrievalResult
 from app.retrieval.tokenizer import tokenize
 
 _SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?])\s+")
+_TRAILING_CITATION_AFTER_PUNCT = re.compile(
+    r"([.!?])\s+((?:\[chunk:[A-Za-z0-9_\-.:]+\]\s*)+)"
+)
 
 SUPPORT_OVERLAP_THRESHOLD = 0.15
 
 
+def _pull_citations_before_punctuation(text: str) -> str:
+    def _swap(match: re.Match[str]) -> str:
+        punctuation, citations = match.group(1), match.group(2)
+        return f" {citations.strip()}{punctuation} "
+
+    return _TRAILING_CITATION_AFTER_PUNCT.sub(_swap, text)
+
+
 def _split_sentences(text: str) -> list[str]:
-    stripped = text.strip()
+    stripped = _pull_citations_before_punctuation(text).strip()
     if not stripped:
         return []
     return [s.strip() for s in _SENTENCE_BOUNDARY.split(stripped) if s.strip()]
