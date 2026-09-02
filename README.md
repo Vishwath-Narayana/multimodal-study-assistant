@@ -68,9 +68,11 @@ Planned end-state feature set (built incrementally by phase, see
 - Evidence sufficiency checking and explicit abstention
 
 **Status:** none of the above are implemented yet. Phase 1 (document
-ingestion — upload, parsing, structure-aware chunking) is complete; the
-conversational/generation features above depend on retrieval (Phase 2) and
-generation (Phase 3), which have not started — see [Roadmap](#15-roadmap).
+ingestion — upload, parsing, structure-aware chunking) and Phase 2
+(baseline retrieval — BM25, dense/FAISS, RRF, HyDE, cross-encoder
+reranking; see [docs/architecture/retrieval.md](docs/architecture/retrieval.md))
+are complete; the conversational/generation features above depend on
+generation (Phase 3), which has not started — see [Roadmap](#15-roadmap).
 
 ## 5. Research Foundation
 
@@ -147,11 +149,12 @@ until experiments are actually run — see [Evaluation](#13-evaluation).
 | Backend | Python 3.12, FastAPI |
 | Frontend | React, TypeScript, Vite, Tailwind CSS |
 | Document processing | Docling |
-| Embeddings | BAAI/bge-small-en-v1.5 *(planned)* |
-| Dense retrieval | FAISS *(planned)* |
-| Lexical retrieval | BM25 *(planned)* |
-| Reranking | cross-encoder/ms-marco-MiniLM-L-6-v2 *(planned)* |
-| LLM | Ollama-compatible local model *(planned)* |
+| Embeddings | BAAI/bge-small-en-v1.5 |
+| Dense retrieval | FAISS (`IndexFlatIP`) |
+| Lexical retrieval | BM25 (`rank-bm25`) |
+| Reranking | cross-encoder/ms-marco-MiniLM-L-6-v2 |
+| LLM (HyDE only, Phase 2) | Ollama-compatible local model, `deepseek-r1:1.5b` preferred |
+| LLM (generation, Phase 3) | Ollama-compatible local model *(planned)* |
 | Vision | LLaVA-Phi3 or replaceable VLM *(planned)* |
 | Audio | Whisper *(planned, when audio is implemented)* |
 | Database | SQLite |

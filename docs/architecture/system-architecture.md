@@ -39,8 +39,9 @@ built, but the baseline pipeline (README §6) stops at reranking → generation
 Status: **implemented for Phase 1** through structure-aware chunking and
 SQLite persistence — see [docs/architecture/ingestion.md](ingestion.md)
 for the actual pipeline, canonical model, and documented limitations.
-Embedding and FAISS indexing (below) are Phase 2, not yet implemented;
-perceptual-hash image dedup and VLM/OCR description are Phase 5.
+Embedding and FAISS indexing (below) are **implemented for Phase 2** — see
+[docs/architecture/retrieval.md](retrieval.md); perceptual-hash image
+dedup and VLM/OCR description remain Phase 5.
 
 ```mermaid
 flowchart LR
@@ -63,11 +64,20 @@ descriptions are Phase 5 additions, not yet implemented.
 
 ## 3. Retrieval Pipeline
 
+Status: **implemented for Phase 2** — see
+[docs/architecture/retrieval.md](retrieval.md) for the full design
+(domain model, BM25/dense/hybrid/RRF/HyDE/reranking architecture, index
+lifecycle, retrieval modes, trace/observability, error behavior, and the
+explicit EduRAG-baseline-vs-implementation-choice list). Query intent
+classification/rewrite (beyond HyDE) is not part of Phase 2 — the diagram
+below is the Phase 2 `full_baseline` mode; `dense`/`hybrid_rrf`/etc. are
+separately selectable subsets of this same pipeline, not implemented as
+new diagrams here.
+
 ```mermaid
 flowchart TD
-    Query --> Rewrite[Query Intent Classification / Rewrite]
-    Rewrite --> Orig[Original Query]
-    Rewrite --> HyDE[HyDE-generated hypothetical answer]
+    Query --> Orig[Original Query]
+    Query --> HyDE[HyDE-generated hypothetical passage]
     Orig --> BM25
     HyDE --> FAISS
     BM25 --> RRF[RRF, k=60 baseline]

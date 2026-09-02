@@ -32,19 +32,43 @@ All of the above are read from `Settings` (`backend/app/core/config.py`),
 overridable via `.env` — never hard-coded inside ingestion logic (PHASE 1
 §27 of the project brief).
 
-## Model Configuration (retrieval/generation baseline, planned)
+## Retrieval Configuration (Phase 2, implemented)
+
+| Parameter | Value | Source |
+|---|---|---|
+| Embedding model | `BAAI/bge-small-en-v1.5` | EduRAG baseline |
+| Embedding dimension | 384 | Fixed by the model |
+| Embedding model revision | not pinned (published `main` revision used as-is) | **Implementation choice** — no local HF-revision-lock mechanism existed to add a pin against in this environment; see note below |
+| Embedding metric / normalization | cosine similarity via inner product over L2-normalized vectors (`normalize_embeddings=True`) | Matches BGE's documented usage |
+| FAISS index type | `IndexFlatIP` (exact search) | **Implementation choice** — spec explicitly avoids premature ANN optimization |
+| BM25 library | `rank-bm25` (`BM25Okapi`) | **Implementation choice** (established library, not from scratch) |
+| BM25 tokenization | lowercase + alphanumeric split, no stopwords, no stemming | **Implementation choice**, documented in `app/retrieval/tokenizer.py` |
+| `BM25_TOP_K` | 20 | EduRAG baseline |
+| `DENSE_TOP_K` | 20 | EduRAG baseline |
+| `EMBEDDING_BATCH_SIZE` | 32 | **Implementation choice** |
+| RRF k | 60 | EduRAG baseline (standard RRF constant) |
+| `RRF_CANDIDATE_K` | 20 | EduRAG baseline (see docs/architecture/retrieval.md §12 citation caveat) |
+| Reranker model | `cross-encoder/ms-marco-MiniLM-L-6-v2` | EduRAG baseline |
+| `RERANK_CANDIDATE_K` | 20 | EduRAG baseline |
+| `FINAL_TOP_K` | 5 | EduRAG baseline |
+| HyDE model | `deepseek-r1:1.5b` via Ollama (`HYDE_MODEL`, `OLLAMA_BASE_URL`) | Preferred baseline model, project brief |
+| HyDE enabled by default | `false` (opt-in via `HYDE_ENABLED`) | **Implementation choice** |
+| HyDE generation params | `max_tokens=256`, `temperature=0.2` | **Implementation choice** |
+| HyDE prompt | one centralized template, `app/retrieval/prompts.py` | **Implementation choice** (Gao et al.-style framing) |
+| Random seed | none required — BM25/FAISS/RRF/reranking are deterministic given fixed inputs; HyDE generation (when a real LLM is used) is set to low temperature (0.2) rather than a fixed seed, since Ollama's `/api/generate` does not expose one for `deepseek-r1` in the version tested | **Implementation choice** |
+
+**Embedding-model revision note**: `sentence-transformers` resolves
+`BAAI/bge-small-en-v1.5` to whatever revision Hugging Face currently serves
+as `main` for that repo; no commit-hash pin was added because doing so
+would require vendoring/mirroring the model or adding a revision-lock
+mechanism not otherwise needed by this project — flagged here rather than
+silently treated as fully pinned.
+
+## Generation Configuration (Phase 3+, planned)
 
 | Parameter | Value |
 |---|---|
-| Embedding model | `BAAI/bge-small-en-v1.5` |
-| Embedding dimension | 384 |
-| Reranker model | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
-| HyDE model | DeepSeek-R1 1.5B (or equivalent locally runnable model) |
 | Generation model | DeepSeek-R1 8B via Ollama (replaceable) |
-| Retrieval top-K (BM25) | TBD |
-| Retrieval top-K (FAISS) | TBD |
-| RRF k | 60 |
-| Reranker top-K | TBD |
 | Generation temperature / seed | TBD — recorded once generation is implemented |
 
 ## Known Environment Dependency (Phase 1)
@@ -56,21 +80,55 @@ for the first time — including running the backend test suite for the
 first time — requires network access. DOCX/PPTX/HTML parsing use
 format-native Docling backends and do not require any model download.
 
+## Known Environment Dependency (Phase 2)
+
+`BAAI/bge-small-en-v1.5` (~130MB) and `cross-encoder/ms-marco-MiniLM-L-6-v2`
+(~90MB) are downloaded from Hugging Face on first real use (cached under
+the sentence-transformers cache directory afterward). The default backend
+test suite (`uv run pytest`) does **not** trigger this — it uses a
+deterministic fake embedding provider and a mocked cross-encoder (see
+`tests/retrieval/fakes.py`) and is excluded-by-default from any test
+marked `requires_model`/`integration`/`requires_ollama` (see
+`pyproject.toml`'s `addopts`). Running
+`backend/scripts/run_retrieval_experiment.py` or building a real FAISS
+index via the `POST /retrieval/search` API does trigger these downloads.
+HyDE additionally requires a locally running Ollama server serving
+`deepseek-r1:1.5b` (or the configured `HYDE_MODEL`) — CI does not run
+Ollama, and no test in the default suite requires it.
+
 ## Dataset Versions
 
-None yet. Evaluation datasets will be versioned (filename or hash) and
-recorded here once introduced under `evaluation/datasets/`. Phase 1's test
-fixtures (`backend/tests/fixtures/`) are synthetic, generated
-deterministically by `backend/scripts/generate_fixtures.py` — not an
-evaluation dataset.
+The Phase 2 dev benchmark (`backend/app/retrieval/evaluation/dataset.json`,
+6 queries, categories: factual/definition/table-related/section-specific/
+multi-document) is built directly against Phase 1's test fixtures
+(`backend/tests/fixtures/study_notes.{html,docx,pptx}`), which are
+synthetic and generated deterministically by
+`backend/scripts/generate_fixtures.py`. Chunk ids referenced as
+`relevant_chunk_ids` were derived by actually running Phase 1 ingestion +
+chunking against those fixtures (`backend/scripts/build_eval_dataset.py`),
+not hand-typed — they are stable as long as the fixture files' byte
+content does not change (`document_id` is a SHA-256 hash of the file).
+This is a small dev benchmark for exercising and comparing retrieval
+modes during development, not a final evaluation dataset.
 
 ## Experiment Configuration Policy
 
 Every experiment must be run from an explicit, checked-in configuration
 (not parameters buried in source code) so it can be rerun later with the
-same settings. Configuration files will live under
-`evaluation/experiments/` once the evaluation harness exists (see
-[docs/research/evaluation-plan.md](evaluation-plan.md)).
+same settings. `backend/scripts/run_retrieval_experiment.py` is that
+configuration for the Phase 2 retrieval benchmark; it writes a full report
+(config, timestamp, model identifiers, per-query results, aggregate
+metrics, latency) to `backend/experiment-results/` (gitignored — reports
+are regenerated by re-running the script, not committed as static files).
+
+**Actual run performed for this phase** (2026-09-02, this environment):
+real `rank-bm25`, real `BAAI/bge-small-en-v1.5` + `IndexFlatIP` FAISS, real
+`cross-encoder/ms-marco-MiniLM-L-6-v2` reranker; HyDE used a **mocked**
+`QueryExpander` (a fixed canned passage) because no local Ollama server was
+available in this environment — recorded in the report's `config` block as
+`"hyde_mocked": true`, never presented as a real HyDE run. See
+[docs/research/evaluation-plan.md](evaluation-plan.md) for the resulting
+numbers and their caveats.
 
 No experimental results are recorded in this document, or anywhere else in
 the repository, until the corresponding run has actually been executed.

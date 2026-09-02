@@ -8,7 +8,7 @@ in the repository's development instructions).
 |---|---|---|
 | 0 | Project foundation | ✅ Complete |
 | 1 | Document ingestion | ✅ Complete |
-| 2 | Baseline retrieval | Not started |
+| 2 | Baseline retrieval | ✅ Complete |
 | 3 | Grounded generation | Not started |
 | 4 | Explainability | Not started |
 | 5 | Multimodal retrieval | Not started |
@@ -41,3 +41,17 @@ design, including documented known limitations (PDF fidelity on tiny
 documents, HTML image byte extraction, formula enrichment disabled). No
 BM25, FAISS, embeddings, HyDE, RRF, reranking, or LLM generation are
 implemented in Phase 1 — those are Phase 2+.
+
+Phase 2 scope: BM25 (`rank-bm25`), dense retrieval (`BAAI/bge-small-en-v1.5`
++ FAISS `IndexFlatIP`), Reciprocal Rank Fusion (k=60), HyDE query expansion
+(Ollama-backed, off by default, mockable), cross-encoder reranking
+(`cross-encoder/ms-marco-MiniLM-L-6-v2`), six independently selectable
+retrieval modes (`bm25`/`dense`/`dense_hyde`/`hybrid_rrf`/
+`hybrid_rrf_hyde`/`full_baseline`), a `RetrievalService` orchestrator with a
+full per-query trace, the `POST /retrieval/search` research/debug endpoint,
+evaluation metrics (MRR/Recall@1/Recall@5/Precision@5/Hit Rate@5) and an
+experiment runner against a small dev benchmark built on the Phase 1
+fixtures — see [docs/architecture/retrieval.md](architecture/retrieval.md).
+No answer generation, citations, grounding, contradiction detection,
+evidence sufficiency, abstention, study engine, or multimodal/audio
+retrieval are implemented in Phase 2 — those are Phase 3+.

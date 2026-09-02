@@ -59,6 +59,65 @@ class Settings(BaseSettings):
     # relative to chunk_target_tokens.
     chunk_overlap_tokens: int = 50
 
+    # --- Retrieval (Phase 2) ---
+    # Where generated (not source-controlled) retrieval artifacts live:
+    # FAISS index files + manifest, and BM25... (BM25 is rebuilt in-memory,
+    # nothing persisted for it yet). Sibling of data_dir/raw and
+    # data_dir/processed, same "generated, gitignored" convention.
+    index_dir: str = str(_DEFAULT_DATA_DIR / "indexes")
+
+    # EduRAG baseline: BM25 top-K candidates before fusion.
+    bm25_top_k: int = 20
+
+    # EduRAG baseline: dense (FAISS) top-K candidates before fusion.
+    dense_top_k: int = 20
+
+    # Implementation choice: batch size for embedding chunks/queries with
+    # BGEEmbeddingProvider. Not specified by the baseline; chosen for
+    # reasonable CPU throughput without large memory spikes.
+    embedding_batch_size: int = 32
+
+    # EduRAG baseline: Reciprocal Rank Fusion constant k=60 (the standard
+    # RRF default from Cormack et al., which EduRAG adopts unchanged).
+    rrf_k: int = 60
+
+    # Implementation choice: how many fused RRF candidates are kept before
+    # being handed to the reranker. EduRAG's baseline figure (RRF pool top
+    # 20 -> reranker) — see docs/architecture/retrieval.md for the citation
+    # caveat. Kept as its own setting (rather than reusing bm25/dense top_k)
+    # because fused-list truncation is a distinct decision point.
+    rrf_candidate_k: int = 20
+
+    # EduRAG baseline: reranker candidate pool size (top 20 RRF results are
+    # rescored by the cross-encoder).
+    rerank_candidate_k: int = 20
+
+    # EduRAG baseline: final evidence set size after reranking.
+    final_top_k: int = 5
+
+    # Implementation choice: HyDE is off by default so `bm25`/`dense`/
+    # `hybrid_rrf` modes never depend on an LLM being reachable; callers opt
+    # in per-request (mode=dense_hyde/hybrid_rrf_hyde/full_baseline) or via
+    # this default.
+    hyde_enabled: bool = False
+
+    # Preferred baseline model per the project brief: DeepSeek-R1 1.5B via
+    # Ollama. Implementation choice: served locally, not fetched by CI.
+    hyde_model: str = "deepseek-r1:1.5b"
+
+    # Implementation choice: local Ollama HTTP API base URL.
+    ollama_base_url: str = "http://localhost:11434"
+
+    # Implementation choice: HyDE generation is deliberately short (a
+    # "concise hypothetical passage", not a full answer) and deterministic
+    # temperature is not mandated by EduRAG — low temperature here favours
+    # reproducibility over diversity.
+    hyde_max_tokens: int = 256
+    hyde_temperature: float = 0.2
+
+    # Implementation choice: HTTP timeout for the local Ollama call.
+    hyde_timeout_seconds: float = 30.0
+
     @property
     def sqlite_path(self) -> str:
         """The filesystem path backing ``database_url`` (sqlite:/// only)."""

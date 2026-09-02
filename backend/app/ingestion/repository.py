@@ -184,6 +184,15 @@ class ChunkRepository:
         ).fetchall()
         return [_row_to_chunk(row) for row in rows]
 
+    def list_all(self) -> list[Chunk]:
+        """All chunks across every document, for building corpus-wide
+        retrieval indexes (BM25/FAISS). Ordered by document then position so
+        index builds are deterministic given the same underlying rows."""
+        rows = self._conn.execute(
+            "SELECT * FROM chunks ORDER BY document_id ASC, order_index ASC",
+        ).fetchall()
+        return [_row_to_chunk(row) for row in rows]
+
 
 def _row_to_document(row: sqlite3.Row) -> StoredDocument:
     return StoredDocument(**{key: row[key] for key in row.keys()})

@@ -1,20 +1,25 @@
 # Ablation Study Plan
 
-Status: **plan only**, no runs performed yet. This defines the pipeline
-configurations we will compare once retrieval and generation exist, to
-isolate the contribution of each component and each proposed extension.
+Status: rows **A–F are now runnable** as of Phase 2 (`RetrievalMode.BM25`
+through `full_baseline` in `app/retrieval/service.py`, plus
+`app/retrieval/hybrid.py::inspect_union` for C's "no fusion strategy"
+variant) — see the Phase 2 dev-benchmark numbers in
+[docs/research/evaluation-plan.md](evaluation-plan.md) for a first (small,
+dev-scale, HyDE-mocked) pass over A/B/D/F-equivalent modes. Row G and the
+full extension ladder remain **plan only**, pending Phase 3+ (grounded
+generation, explainability).
 
 ## Baseline Reproduction Ladder
 
-| Configuration | Description |
-|---|---|
-| A | BM25 only |
-| B | FAISS only |
-| C | BM25 + FAISS (no fusion strategy — simple concat/dedup) |
-| D | BM25 + FAISS + RRF |
-| E | D + HyDE |
-| F | E + Cross-Encoder Reranker |
-| G | Full EduRAG baseline (F + grounded generation + explainability) |
+| Configuration | Description | Phase 2 equivalent |
+|---|---|---|
+| A | BM25 only | `RetrievalMode.BM25` |
+| B | FAISS only | `RetrievalMode.DENSE` |
+| C | BM25 + FAISS (no fusion strategy — simple concat/dedup) | `hybrid.inspect_union()`, explicitly labeled as an inspection mode, not a ranking |
+| D | BM25 + FAISS + RRF | `RetrievalMode.HYBRID_RRF` |
+| E | D + HyDE | `RetrievalMode.HYBRID_RRF_HYDE` |
+| F | E + Cross-Encoder Reranker | `RetrievalMode.FULL_BASELINE` |
+| G | Full EduRAG baseline (F + grounded generation + explainability) | not yet implemented (Phase 3+) |
 
 ## Extension Ladder (built on G)
 
