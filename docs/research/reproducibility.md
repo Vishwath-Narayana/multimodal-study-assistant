@@ -12,7 +12,7 @@ produced.
 |---|---|
 | OS assumption | macOS / Linux, local-first |
 | Python version | 3.12 (pinned via `uv`, see `backend/.python-version`) |
-| Node version | 20+ (developed against Node 26) |
+| Node version | 22+ (pnpm 11 requires Node ≥22.13; developed against Node 26; CI pinned to Node 22) |
 | Package managers | `uv` (backend), `pnpm` (frontend) |
 
 ## Ingestion Configuration (Phase 1, implemented)

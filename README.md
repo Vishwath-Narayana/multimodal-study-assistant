@@ -188,7 +188,7 @@ cd backend
 uv sync --dev
 ```
 
-**Frontend** (Node 20+, managed with pnpm):
+**Frontend** (Node 22+, managed with pnpm — pnpm 11 requires Node ≥22.13):
 
 ```bash
 cd frontend
