@@ -1,0 +1,48 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# --- Node / frontend ---
+node_modules/
+frontend/dist/
+frontend/build/
+.pnpm-store/
+
+# --- Environment ---
+.env
+.env.*
+!.env.example
+
+# --- Data / models (never commit student material or weights) ---
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+models/*
+!models/.gitkeep
+
+# --- Local databases & indexes ---
+*.db
+*.sqlite
+*.sqlite3
+*.faiss
+*.index
+
+# --- Logs ---
+*.log
+logs/
+
+# --- OS / editor ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
