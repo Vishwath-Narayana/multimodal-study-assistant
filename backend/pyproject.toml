@@ -76,3 +76,4 @@ packages = ["app"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "app/ingestion/schema.sql" = "app/ingestion/schema.sql"
+"app/retrieval/evaluation/dataset.json" = "app/retrieval/evaluation/dataset.json"

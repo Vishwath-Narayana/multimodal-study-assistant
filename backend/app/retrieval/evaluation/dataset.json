@@ -1,0 +1,94 @@
+{
+  "description": "Phase 2 dev benchmark: a small, deterministic evaluation set built directly against the Phase 1 fixtures in backend/tests/fixtures/ (study_notes.html, study_notes.docx, study_notes.pptx). Chunk ids are deterministic given a fixture's content hash (document_id) and chunking config (target_tokens=512, overlap_tokens=50) — see docs/architecture/ingestion.md. Regenerate with backend/scripts/build_eval_dataset.py if a fixture file's content changes.",
+  "documents": {
+    "study_notes.html": "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+    "study_notes.docx": "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+    "study_notes.pptx": "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+  },
+  "queries": [
+    {
+      "query_id": "q1",
+      "query": "What does photosynthesis convert light energy into?",
+      "category": "factual",
+      "relevant_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003"
+      ],
+      "relevant_document_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"
+      ]
+    },
+    {
+      "query_id": "q2",
+      "query": "What is cellular respiration?",
+      "category": "definition",
+      "relevant_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+      ],
+      "relevant_document_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ]
+    },
+    {
+      "query_id": "q3",
+      "query": "Which organelle is responsible for ATP production?",
+      "category": "table-related",
+      "relevant_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00005"
+      ],
+      "relevant_document_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ]
+    },
+    {
+      "query_id": "q4",
+      "query": "What is covered in Section 1.2, Cellular Respiration?",
+      "category": "section-specific",
+      "relevant_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+      ],
+      "relevant_document_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ]
+    },
+    {
+      "query_id": "q5",
+      "query": "What is photosynthesis?",
+      "category": "multi-document",
+      "relevant_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001"
+      ],
+      "relevant_document_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ]
+    },
+    {
+      "query_id": "q6",
+      "query": "What is the powerhouse of the cell?",
+      "category": "factual",
+      "relevant_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004"
+      ],
+      "relevant_document_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"
+      ]
+    }
+  ]
+}
