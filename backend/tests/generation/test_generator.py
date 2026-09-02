@@ -41,3 +41,20 @@ def test_generate_with_no_citations_in_output() -> None:
     generator = OllamaGenerator(client)
     result = generator.generate("What is photosynthesis?", EVIDENCE, PARAMS)
     assert result.raw_chunk_ids == []
+
+
+def test_plain_prompt_mode_used_for_ablation_stage_a() -> None:
+    """`use_grounded_prompt=False` is only exercised by
+    scripts/run_generation_experiment.py's stage A; verified here so the
+    ablation entry point stays correct without running the full script."""
+    seen_prompts: list[str] = []
+
+    class RecordingClient(FakeLLMClient):
+        def generate(self, prompt: str, params) -> str:  # type: ignore[no-untyped-def]
+            seen_prompts.append(prompt)
+            return super().generate(prompt, params)
+
+    generator = OllamaGenerator(RecordingClient(), use_grounded_prompt=False)
+    generator.generate("What is photosynthesis?", EVIDENCE, PARAMS)
+    assert "SYSTEM INSTRUCTIONS" not in seen_prompts[0]
+    assert "chunk:c1" not in seen_prompts[0]

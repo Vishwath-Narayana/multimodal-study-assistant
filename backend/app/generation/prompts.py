@@ -81,3 +81,17 @@ def render_grounded_prompt(query: str, evidence: list[RetrievalResult]) -> str:
         f"=== STUDENT QUESTION ===\n{query}\n\n"
         "=== ANSWER ==="
     )
+
+
+def render_plain_prompt(query: str, evidence: list[RetrievalResult]) -> str:
+    """The "ungrounded" baseline prompt used only for ablation experiment
+    stage A (spec section 21: "retrieval + plain generation") — retrieved
+    content is handed to the model with none of the grounding rules, no
+    citation format, and no evidence/instruction separation. This exists
+    solely so the ablation comparison has a real, executable stage A to
+    compare against; it is never used by the production `/chat/query`
+    endpoint (see `app.generation.generator.OllamaGenerator`, which defaults
+    to the grounded prompt).
+    """
+    context = "\n\n".join(item.content for item in evidence)
+    return f"{context}\n\nQuestion: {query}\nAnswer:"

@@ -22,14 +22,20 @@ from app.generation.citations import extract_citations
 from app.generation.errors import GenerationFailedError, ProviderUnavailableError
 from app.generation.interfaces import Generator
 from app.generation.models import GeneratedAnswer
-from app.generation.prompts import render_grounded_prompt
+from app.generation.prompts import render_grounded_prompt, render_plain_prompt
 from app.retrieval.llm_client import GenerationParams, LLMClient
 from app.retrieval.models import RetrievalResult
 
 
 class OllamaGenerator(Generator):
-    def __init__(self, client: LLMClient) -> None:
+    def __init__(self, client: LLMClient, use_grounded_prompt: bool = True) -> None:
+        """`use_grounded_prompt=False` selects the ungrounded baseline
+        prompt (`app.generation.prompts.render_plain_prompt`) — used only
+        by the Phase 3 ablation experiment's stage A
+        (`scripts/run_generation_experiment.py`), never by the production
+        `/chat/query` endpoint, which always leaves this at its default."""
         self._client = client
+        self._use_grounded_prompt = use_grounded_prompt
 
     @property
     def provider_id(self) -> str:
@@ -47,7 +53,11 @@ class OllamaGenerator(Generator):
                 f"LLM provider '{self.provider_id}' (model '{self.model_id}') is unreachable. "
                 "Is Ollama running and is the model pulled?"
             )
-        prompt = render_grounded_prompt(query, evidence)
+        prompt = (
+            render_grounded_prompt(query, evidence)
+            if self._use_grounded_prompt
+            else render_plain_prompt(query, evidence)
+        )
         try:
             text = self._client.generate(prompt, params)
         except httpx.HTTPError as exc:
