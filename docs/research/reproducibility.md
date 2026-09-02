@@ -64,12 +64,25 @@ would require vendoring/mirroring the model or adding a revision-lock
 mechanism not otherwise needed by this project — flagged here rather than
 silently treated as fully pinned.
 
-## Generation Configuration (Phase 3+, planned)
+## Generation Configuration (Phase 3, implemented)
 
-| Parameter | Value |
-|---|---|
-| Generation model | DeepSeek-R1 8B via Ollama (replaceable) |
-| Generation temperature / seed | TBD — recorded once generation is implemented |
+| Parameter | Value | Source |
+|---|---|---|
+| Generation model | `deepseek-r1:8b` via Ollama (`LLM_MODEL`, replaceable) | Project brief's preferred research baseline |
+| Generation temperature | 0.2 (`GENERATION_TEMPERATURE`) | **Implementation choice** — favors reproducibility over diversity; not mandated by EduRAG |
+| Generation max tokens | 512 (`GENERATION_MAX_TOKENS`) | **Implementation choice** |
+| Generation timeout | 120s (`GENERATION_TIMEOUT_SECONDS`) | **Implementation choice** |
+| Random seed | none — Ollama's `/api/generate` does not expose one for `deepseek-r1` in the version tested; low temperature (0.2) is used instead, same as HyDE | **Implementation choice** |
+| Citation format | `[chunk:<chunk_id>]`, extracted via a fixed regex | **Implementation choice** — see docs/architecture/generation.md |
+| Attribution weighting | 0.7 x cross-encoder relevance + 0.3 x lexical overlap (`ATTRIBUTION_RELEVANCE_WEIGHT`/`ATTRIBUTION_LEXICAL_WEIGHT`) | EduRAG baseline |
+| Token grounding tiers | exact 1.0 / stem 0.9 / substring 0.8 / ungrounded 0.2 | EduRAG baseline (fixed, not configurable) |
+| Grounding "grounded" cutoff | 0.8 (`GROUNDING_THRESHOLD`) | **Implementation choice** |
+| Evidence sufficiency thresholds | min chunks 1, min lexical overlap 0.08, min reranker score 0.0 (`SUFFICIENCY_MIN_*`) | **Implementation choice**, not scientifically validated |
+| Contradiction topic-overlap threshold | 0.2 (`CONTRADICTION_TOPIC_OVERLAP_THRESHOLD`) | **Implementation choice** |
+
+All of the above are read from `Settings`, overridable via `.env` — see
+`.env.example` and [docs/architecture/generation.md](../architecture/generation.md)
+for the full design and documented limitations of each heuristic.
 
 ## Known Environment Dependency (Phase 1)
 
@@ -95,6 +108,18 @@ index via the `POST /retrieval/search` API does trigger these downloads.
 HyDE additionally requires a locally running Ollama server serving
 `deepseek-r1:1.5b` (or the configured `HYDE_MODEL`) — CI does not run
 Ollama, and no test in the default suite requires it.
+
+## Known Environment Dependency (Phase 3)
+
+Real generation requires a locally running Ollama server serving
+`deepseek-r1:8b` (or the configured `LLM_MODEL`) — CI does not run Ollama,
+and no test in the default suite (`uv run pytest`) requires it. The default
+suite uses `FakeGenerator`/`FakeLLMClient`
+(`tests/generation/fakes.py`); the one real-Ollama test
+(`tests/generation/test_generator_integration.py`) is marked
+`requires_ollama` and self-skips when Ollama/the model isn't reachable.
+`backend/scripts/run_generation_experiment.py` uses a mocked generator by
+default and only attempts a real Ollama call when passed `--ollama`.
 
 ## Dataset Versions
 
@@ -132,3 +157,11 @@ numbers and their caveats.
 
 No experimental results are recorded in this document, or anywhere else in
 the repository, until the corresponding run has actually been executed.
+
+**Phase 3**: no generation-ablation experiment run has been executed in
+this environment yet (no locally reachable Ollama server was available
+while implementing this phase), so no `run_generation_experiment.py`
+results are recorded here. See
+[docs/architecture/generation.md](../architecture/generation.md)
+"Evaluation" for what the script measures and why the current dev dataset
+cannot yet support Token F1/ROUGE-L/BERTScore.
