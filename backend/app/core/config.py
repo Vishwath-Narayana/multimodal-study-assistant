@@ -30,8 +30,44 @@ class Settings(BaseSettings):
     # even for purely local development.
     cors_allowed_origins: str = "http://localhost:5173"
 
+    # --- Generation (Phase 3) ---
+    # Research baseline: DeepSeek-R1 8B served locally through Ollama (see
+    # docs/architecture/generation.md). Distinct from `hyde_model` below,
+    # which is a smaller model used only for HyDE query expansion.
     llm_provider: str = "ollama"
-    llm_model: str = ""
+    llm_model: str = "deepseek-r1:8b"
+
+    # Implementation choice: deterministic/low-temperature by default, to
+    # favour reproducibility for a study assistant over creative variation.
+    # Not mandated by EduRAG.
+    generation_max_tokens: int = 512
+    generation_temperature: float = 0.2
+    generation_timeout_seconds: float = 120.0
+
+    # Evidence sufficiency / abstention (spec section 8). Thresholds are
+    # implementation choices, not EduRAG-specified or scientifically
+    # validated values — see app.generation.sufficiency for exactly how
+    # they are used and docs/architecture/generation.md "Limitations".
+    sufficiency_min_chunks: int = 1
+    sufficiency_min_lexical_overlap: float = 0.08
+    sufficiency_min_reranker_score: float = 0.0
+
+    # EduRAG baseline: deterministic chunk attribution weighting
+    # (0.7 x cross-encoder relevance + 0.3 x lexical overlap). See
+    # app.generation.attribution.
+    attribution_relevance_weight: float = 0.7
+    attribution_lexical_weight: float = 0.3
+
+    # Token grounding "grounded" cutoff (score >= this counts as grounded
+    # for the grounded/total token counts). The EduRAG matching-hierarchy
+    # scores themselves (1.0/0.9/0.8/0.2) are fixed baseline values, not
+    # configurable — see app.generation.token_grounding.
+    grounding_threshold: float = 0.8
+
+    # Contradiction checking: minimum lexical (Jaccard) overlap between two
+    # evidence chunks before they are even considered as a candidate
+    # conflicting pair. See app.generation.contradiction.
+    contradiction_topic_overlap_threshold: float = 0.2
 
     vlm_provider: str = ""
     vlm_model: str = ""
