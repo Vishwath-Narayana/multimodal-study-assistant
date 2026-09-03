@@ -1,0 +1,55 @@
+{
+  "description": "Hand-authored Phase 5 Study Engine dev fixture, one example per study mode. Queries/topics are written against the subject matter of the project's existing Phase 1 ingestion fixtures (backend/tests/fixtures/) so a real end-to-end run (real ingestion + real retrieval + a real or mocked LLM) has plausible evidence to work with. Not derived from an actual ingestion run (unlike app.multimodal.evaluation.dataset.json) and carries no exact chunk ids for that reason -- see app.study.evaluation.dataset module docstring.",
+  "examples": [
+    {
+      "example_id": "summary-1",
+      "mode": "summary",
+      "query": "document structure and headings",
+      "expected_source_terms": ["heading", "section", "paragraph"],
+      "note": "Exercises the concise/standard/detailed length knob."
+    },
+    {
+      "example_id": "explain-1",
+      "mode": "explain",
+      "query": "how document chunking works",
+      "expected_source_terms": ["chunk", "token"],
+      "note": "Exercises the simple/standard/detailed style knob."
+    },
+    {
+      "example_id": "compare-1",
+      "mode": "compare",
+      "query": "",
+      "topic_a": "headings",
+      "topic_b": "paragraphs",
+      "expected_source_terms": ["heading", "paragraph"],
+      "note": "Exercises two-sided retrieval + incomplete-evidence handling."
+    },
+    {
+      "example_id": "quiz-1",
+      "mode": "quiz",
+      "query": "document parsing",
+      "count": 3,
+      "difficulty": "medium",
+      "expected_source_terms": ["parse", "document"],
+      "note": "Exercises count validation and per-question citation grounding."
+    },
+    {
+      "example_id": "mcq-1",
+      "mode": "mcq",
+      "query": "document parsing",
+      "count": 3,
+      "difficulty": "medium",
+      "expected_source_terms": ["parse", "document"],
+      "note": "Exercises 4-option structural validation."
+    },
+    {
+      "example_id": "flashcards-1",
+      "mode": "flashcards",
+      "query": "document structure terminology",
+      "count": 4,
+      "difficulty": "easy",
+      "expected_source_terms": ["heading", "section"],
+      "note": "Exercises front/back concision and duplicate detection."
+    }
+  ]
+}

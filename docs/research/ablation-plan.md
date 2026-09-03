@@ -85,6 +85,37 @@ executed against real model output — only their configuration mechanism
 is implemented and confirmed wired end-to-end (mocked providers, see the
 Phase 4 dev dataset). No results are reported until they are.
 
+## Phase 5 Study Engine Ablation Rows
+
+`StudyEngineServiceConfig` (spec section 30) mirrors
+`GenerationServiceConfig`'s toggle pattern exactly — three ablation
+toggles, each defaulting to `True` so the full pipeline runs unless a
+caller/experiment explicitly disables a stage:
+
+| Toggle | Adds/removes |
+|---|---|
+| `enable_sufficiency_check` | evidence-sufficiency gate (stage A vs. B below) |
+| `enable_citation_validation` | citation grounding/rejection during item validation |
+| `enable_contradiction_check` | `LexicalContradictionChecker` pass over the evidence set |
+
+| Configuration | Adds | Status |
+|---|---|---|
+| A | Retrieved evidence + plain generation (all three toggles off) | Runnable via `StudyEngineServiceConfig(enable_sufficiency_check=False, enable_citation_validation=False, enable_contradiction_check=False)` — items are still structurally validated (empty fields, MCQ option integrity), only the *grounding-requires-a-valid-citation* rule and the sufficiency abstention gate are lifted |
+| B | A + evidence sufficiency check | `enable_sufficiency_check=True`, others off |
+| C | B + citation validation (grounding requirement) | `enable_sufficiency_check=True`, `enable_citation_validation=True` |
+| D | C + contradiction checking | All three toggles on (the default `StudyEngineServiceConfig()`) |
+| E | Full grounded study generation across every mode | Row D, run once per mode (summary/explain/compare/quiz/mcq/flashcards) |
+
+Applies identically to every study mode — the same `StudyEngineService`
+instance and config drive all six `generate_*`/`summarize`/`explain`/
+`compare` methods, so an experiment script would sweep modes × rows the
+same way `run_generation_experiment.py` sweeps retrieval modes × rows A-G.
+
+**Not yet run**: no experiment runner script was written to execute this
+ladder against a real model (same status as the Phase 3/4 ladders above);
+only the toggle mechanism itself is implemented and unit-tested
+(`tests/study/test_service.py`). No results are reported until measured.
+
 ## Method
 
 - Each configuration is run against the same fixed evaluation dataset and

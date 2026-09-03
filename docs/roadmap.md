@@ -12,7 +12,7 @@ in the repository's development instructions).
 | 3 | Grounded generation + explainability | ✅ Complete |
 | 4 | ~~Explainability~~ (merged into Phase 3) | — |
 | 5 | Multimodal retrieval | ✅ Complete |
-| 6 | Study engine | Not started |
+| 6 | Study engine | ✅ Complete |
 | 7 | Improved retrieval | Not started |
 | 8 | ~~Evidence sufficiency + abstention~~ (merged into Phase 3) | — |
 | 9 | ~~Contradiction detection~~ (merged into Phase 3) | — |
@@ -108,3 +108,21 @@ advanced tutoring, new chat UI, authentication, deployment, or direct
 visual (CLIP-style) embeddings are implemented in Phase 5 — see
 docs/architecture/multimodal.md "Visual Embeddings" and "Known
 Limitations".
+
+Phase 6 scope (implemented as "Phase 5 — Study Engine" against the
+implementation brief this work was built from — see
+[docs/architecture/study-engine.md](architecture/study-engine.md)): a
+`StudyEngineService` orchestrating six grounded study modes (summary,
+explain, compare, quiz, mcq, flashcards) on top of the unchanged Phase 2
+`RetrievalService` and Phase 3 sufficiency/citation/contradiction
+components (no second retrieval or grounding pipeline); dedicated
+per-mode prompts and a new JSON-from-LLM parsing/validation layer
+(`app.study.parsing`/`app.study.validation`) since no such helper existed
+before; deterministic MCQ/quiz/flashcard/comparison structural validation
+and within-batch duplicate detection; a new `study_items` persistence
+table (additive `CREATE TABLE`, no migration needed); six
+`POST /study/{summary,explain,compare,quiz,mcq,flashcards}` endpoints;
+study evaluation metric/dataset interfaces. No polished frontend/study UI,
+authentication, deployment, learner analytics, spaced repetition,
+gamification, or autonomous tutoring agents are implemented in Phase
+6 — see docs/architecture/study-engine.md "Known Limitations".

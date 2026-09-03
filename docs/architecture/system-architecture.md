@@ -142,14 +142,22 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Evidence[Selected Evidence] --> Gen[Study-Item Generator]
-    Gen --> Summary[Summary]
-    Gen --> Quiz[Quiz]
-    Gen --> MCQ[MCQ]
-    Gen --> Flash[Flashcards]
-    Gen --> Compare[Comparison]
+    Req[Study Request] --> Ret[RetrievalService]
+    Ret --> Evidence[Evidence]
+    Evidence --> Suff[Sufficiency Check]
+    Suff -->|insufficient| Abstain[Abstain]
+    Suff -->|sufficient| Gen[StudyGenerator]
+    Gen --> Parse[Parsing]
+    Parse --> Val[Validation + Citations]
+    Val --> Out[Structured Study Output]
 ```
 
+`StudyEngineService` (`app.study.service`) orchestrates six modes —
+summary, explain, compare, quiz, mcq, flashcards — entirely on top of the
+existing Phase 2 `RetrievalService` and Phase 3 `HeuristicSufficiencyChecker`
+/ `DeterministicCitationValidator` / `LexicalContradictionChecker`; it does
+not retrieve or ground anything itself. See
+[docs/architecture/study-engine.md](study-engine.md) for the full design.
 Every generated study item stores its `source_chunk_ids` so it remains
 traceable back to evidence (see [docs/architecture/database.md](database.md)).
 

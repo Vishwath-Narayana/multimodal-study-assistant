@@ -114,6 +114,21 @@ class Settings(BaseSettings):
     max_image_artifact_size_mb: int = 20
     max_image_pixels: int = 40_000_000
 
+    # --- Study Engine (Phase 5) ---
+    # Reuses `llm_provider`/`ollama_base_url` (Phase 3) rather than inventing
+    # a parallel provider concept — only generation-shape knobs are separate
+    # since study items (esp. quiz/mcq/flashcards JSON with several items)
+    # typically need more output tokens than a single chat answer.
+    study_max_tokens: int = 1024
+    study_temperature: float = 0.2
+    study_timeout_seconds: float = 120.0
+
+    # Requested item count bounds for quiz/mcq/flashcards (spec section 31:
+    # "requested count outside allowed range" must be rejected explicitly).
+    # Implementation choice, not EduRAG-specified.
+    study_min_count: int = 1
+    study_max_count: int = 20
+
     # --- Ingestion (Phase 1) ---
     # Data directory root. raw/ holds uploaded source files, processed/ holds
     # per-document derived artifacts (currently: extracted images).

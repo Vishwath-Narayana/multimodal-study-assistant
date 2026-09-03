@@ -80,3 +80,28 @@ CREATE TABLE IF NOT EXISTS artifacts (
 
 CREATE INDEX IF NOT EXISTS idx_artifacts_document_id ON artifacts(document_id);
 CREATE INDEX IF NOT EXISTS idx_artifacts_chunk_id ON artifacts(chunk_id);
+
+-- Phase 5: generated study items (spec section 21). One row per validated
+-- study item (a single summary/explanation is one row; a quiz/mcq/
+-- flashcards request produces one row per item). `content` holds the full
+-- JSON-serialized item payload (mode-specific shape) so this one table
+-- covers every study mode without a column per mode's fields — the
+-- smallest schema that still lets a future UI list/filter a student's
+-- generated items without re-generating them. Never stores document
+-- content itself, only `source_chunk_ids` pointing back to `chunks`.
+CREATE TABLE IF NOT EXISTS study_items (
+    id TEXT PRIMARY KEY,
+    request_id TEXT NOT NULL,
+    mode TEXT NOT NULL,
+    document_id TEXT,
+    query TEXT,
+    question TEXT,
+    answer TEXT,
+    content TEXT NOT NULL,
+    source_chunk_ids TEXT NOT NULL,
+    difficulty TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_study_items_request_id ON study_items(request_id);
+CREATE INDEX IF NOT EXISTS idx_study_items_document_id ON study_items(document_id);

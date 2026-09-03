@@ -126,6 +126,46 @@ dev dataset, the way `run_retrieval_experiment.py` does for Phase 2, is
 left for a future pass — the dataset and metric functions this would need
 already exist). No fabricated numbers are reported in place of this.
 
+## Study Engine Metrics — implemented (Phase 5), not yet run against real model output
+
+`backend/app/study/evaluation/metrics.py`, unit-tested with hand-computed
+examples (`tests/study/test_evaluation.py`):
+
+- `token_f1`/`rouge_l` — imported directly from
+  `app.generation.evaluation.metrics`, not re-implemented, for
+  summarization text-quality scoring against a reference summary.
+  `bertscore_f1` is unavailable for the same reason it is in Phase 3 (no
+  `bert-score` dependency installed).
+- `compute_study_trust_metrics` (`StudyTrustMetrics`) — structural/trust
+  metrics computed from `StudyGenerationStats`/citation-validity flags
+  already produced by `StudyEngineService`, covering spec section 28's
+  quiz/mcq/flashcards/overall metric groups in one shape (called once per
+  mode's example batch for a per-mode breakdown):
+  - `grounded_item_rate` — validated_count / generated_count, i.e. the
+    spec's "grounded-study-item rate".
+  - `duplicate_rate` — duplicate_count / (validated_count + duplicate_count).
+  - `citation_validity_rate` — same computation as Phase 3's trust metrics.
+  - `correct_abstention_rate` / `false_answer_rate` — require a gold
+    `answerable` label per example (same discipline as Phase 3's
+    `TrustExample.gold_answerable`); `None` when no labeled examples are
+    given, never a misleading guess.
+- MCQ-specific structural checks (exactly-one-correct, no duplicate
+  options, valid `correct_option`) are enforced by
+  `app.study.validation.validate_mcq_items` itself, not measured
+  separately after the fact — an invalid MCQ never reaches the response,
+  so a post-hoc "structural validity rate" metric would always read 100%
+  by construction; `rejected_count` in `StudyGenerationStats` already
+  reports how many were caught.
+
+Run against the Phase 5 dev dataset
+(`backend/app/study/evaluation/dataset.json`, 6 examples, one per study
+mode — see [docs/research/reproducibility.md](reproducibility.md)):
+**not measured**. As with the Phase 4 multimodal dataset, no experiment
+runner script was written to execute these metrics end-to-end against a
+real or mocked model in this environment; the dataset and metric functions
+this would need already exist. No fabricated numbers are reported in place
+of this.
+
 ## Proposed Research Metrics (for our extensions)
 
 - Contradiction detection precision / recall / F1
