@@ -69,8 +69,50 @@ class Settings(BaseSettings):
     # conflicting pair. See app.generation.contradiction.
     contradiction_topic_overlap_threshold: float = 0.2
 
+    # --- Multimodal (Phase 4) ---
+    # Empty by default so no CI/default-test-suite run ever requires a VLM/
+    # OCR/Whisper model to be present (spec section 35). Set vlm_provider to
+    # "ollama" (with vlm_model, e.g. "llava-phi3") to enable image/diagram
+    # description; the local Ollama server used here is the same one
+    # LLM_MODEL/HYDE_MODEL already target (Settings.ollama_base_url).
     vlm_provider: str = ""
     vlm_model: str = ""
+    vlm_max_tokens: int = 300
+    vlm_timeout_seconds: float = 60.0
+
+    # Set to "tesseract" to enable OCR (requires the system `tesseract`
+    # binary; see app/multimodal/ocr.py). Empty = OCR disabled, no attempt
+    # made, chunk.ocr_status stays "not_attempted".
+    ocr_provider: str = ""
+
+    # Set to "whisper" to enable audio transcription (app/multimodal/
+    # transcription.py, faster-whisper). Empty = transcription disabled;
+    # audio ingestion fails explicitly (spec section 15) rather than
+    # fabricating a transcript.
+    transcription_provider: str = ""
+    whisper_model: str = "base"
+    whisper_device: str = "auto"
+    whisper_compute_type: str = "int8"
+    # Empty = auto-detect language (faster-whisper's default behavior).
+    whisper_language: str = ""
+
+    # Audio ingestion (Phase 4) — mirrors the document-ingestion settings
+    # above (supported_extensions_raw / max_upload_size_mb), kept separate
+    # since audio has different practical size/format constraints.
+    audio_supported_extensions_raw: str = "wav,mp3,m4a"
+    max_audio_upload_size_mb: int = 200
+    # Implementation choice: audio transcript chunks are grouped by the same
+    # ~token budget as text chunks (chunk_target_tokens) rather than a
+    # separate setting, so the two stay comparable; kept as its own name so
+    # it can be tuned independently later without touching text chunking.
+    transcript_chunk_target_tokens: int = 512
+
+    # Image-artifact validation (Phase 4, spec section 23: decompression
+    # bombs / oversized images). Applied to already-extracted images before
+    # OCR/VLM processing — separate from max_upload_size_mb, which bounds
+    # the whole source document, not one extracted image.
+    max_image_artifact_size_mb: int = 20
+    max_image_pixels: int = 40_000_000
 
     # --- Ingestion (Phase 1) ---
     # Data directory root. raw/ holds uploaded source files, processed/ holds
