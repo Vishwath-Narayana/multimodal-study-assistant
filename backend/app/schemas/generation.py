@@ -31,6 +31,16 @@ class EvidenceItemResponse(BaseModel):
     content_preview: str
     attribution_score: float | None = None
     attribution_rank: int | None = None
+    # Phase 4: modality + multimodal explainability fields, populated from
+    # RetrievalResult.metadata (see app.retrieval.corpus.chunk_metadata).
+    # Only set when the underlying chunk actually carries them.
+    chunk_type: str | None = None
+    audio_start: float | None = None
+    audio_end: float | None = None
+    ocr_text: str | None = None
+    vlm_description: str | None = None
+    original_artifact: str | None = None
+    table_content: list[list[str]] | None = None
 
 
 class CitationResponse(BaseModel):
@@ -41,6 +51,9 @@ class CitationResponse(BaseModel):
     filename: str | None = None
     page: int | None = None
     section: str | None = None
+    chunk_type: str | None = None
+    audio_start: float | None = None
+    audio_end: float | None = None
 
 
 class GroundingResponse(BaseModel):

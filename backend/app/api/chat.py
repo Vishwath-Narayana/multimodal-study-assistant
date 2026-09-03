@@ -163,6 +163,13 @@ def _build_response(
                 if item.chunk_id in attribution_by_chunk
                 else None
             ),
+            chunk_type=item.metadata.get("chunk_type"),
+            audio_start=item.metadata.get("audio_start"),
+            audio_end=item.metadata.get("audio_end"),
+            ocr_text=item.metadata.get("ocr_text"),
+            vlm_description=item.metadata.get("vlm_description"),
+            original_artifact=item.metadata.get("original_artifact"),
+            table_content=item.metadata.get("table_content"),
         )
         for item in result.evidence
     ]
@@ -176,6 +183,9 @@ def _build_response(
             filename=filename_for(c.document_id) if c.document_id else None,
             page=c.page,
             section=c.section,
+            chunk_type=c.chunk_type,
+            audio_start=c.audio_start,
+            audio_end=c.audio_end,
         )
         for c in result.citations
     ]
