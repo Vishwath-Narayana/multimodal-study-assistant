@@ -84,6 +84,53 @@ All of the above are read from `Settings`, overridable via `.env` — see
 `.env.example` and [docs/architecture/generation.md](../architecture/generation.md)
 for the full design and documented limitations of each heuristic.
 
+## Multimodal Configuration (Phase 4, implemented)
+
+| Parameter | Value | Source |
+|---|---|---|
+| VLM provider | none by default (`VLM_PROVIDER=""`) | **Implementation choice** — optional, see docs/architecture/multimodal.md |
+| VLM model (when enabled) | Ollama-served LLaVA/LLaVA-Phi3-family model (`VLM_MODEL`) | Project brief's preferred choice |
+| VLM generation params | `max_tokens=300` (`VLM_MAX_TOKENS`), `temperature=0.2` (fixed), timeout 60s (`VLM_TIMEOUT_SECONDS`) | **Implementation choice** |
+| OCR provider | none by default (`OCR_PROVIDER=""`) | **Implementation choice** — optional |
+| OCR engine (when enabled) | `tesseract` via `pytesseract` (`OCR_PROVIDER=tesseract`) | **Implementation choice** |
+| Transcription provider | none by default (`TRANSCRIPTION_PROVIDER=""`) | **Implementation choice** — optional |
+| Whisper model (when enabled) | `base` (`WHISPER_MODEL`), via `faster-whisper` | **Implementation choice** |
+| Whisper device/compute type | `auto` / `int8` (`WHISPER_DEVICE`/`WHISPER_COMPUTE_TYPE`) | **Implementation choice** — CPU-compatible, no GPU required |
+| Whisper language | auto-detect by default (`WHISPER_LANGUAGE=""`) | **Implementation choice** |
+| Audio formats | wav, mp3, m4a (`AUDIO_SUPPORTED_EXTENSIONS`) | **Implementation choice** |
+| Max audio upload size | 200MB (`MAX_AUDIO_UPLOAD_SIZE_MB`) | **Implementation choice** |
+| Transcript chunk token budget | 512 (`TRANSCRIPT_CHUNK_TARGET_TOKENS`), no overlap | **Implementation choice** — see docs/architecture/multimodal.md "Timestamp-Aware Chunking" |
+| Image artifact size cap | 20MB (`MAX_IMAGE_ARTIFACT_SIZE_MB`) | **Implementation choice** |
+| Image artifact pixel cap | 40,000,000 (`MAX_IMAGE_PIXELS`) | **Implementation choice** — decompression-bomb guard |
+
+All of the above are read from `Settings`, overridable via `.env` — see
+`.env.example` and
+[docs/architecture/multimodal.md](../architecture/multimodal.md).
+
+## Known Environment Dependency (Phase 4)
+
+No VLM (`llava`-family), OCR (`tesseract` binary), or Whisper model was
+available/installed in this environment while implementing this phase.
+All three are implemented as optional, configuration-driven providers
+(`VLM_PROVIDER`/`OCR_PROVIDER`/`TRANSCRIPTION_PROVIDER` empty by default)
+with deterministic fake providers used by the default test suite
+(`tests/multimodal/fakes.py`) and no test in that suite requires any of
+the three real dependencies — `requires_tesseract`/`requires_whisper`
+pytest markers exist for future opt-in real-model tests, following the
+same pattern as `requires_ollama`/`requires_model`. `faster-whisper` and
+`pytesseract` are installed as regular dependencies (no torch, CPU-only),
+but the `tesseract` system binary and Whisper model weights are only
+fetched/required on first real use.
+
+The Phase 4 dev dataset
+(`backend/app/multimodal/evaluation/dataset.json`, 8 queries) was built
+with **mocked** VLM/OCR/transcription providers
+(`backend/scripts/build_multimodal_eval_dataset.py`), the same "prove the
+pipeline is wired end to end, not a real-model measurement" precedent as
+the Phase 2 mocked-HyDE benchmark — see
+[docs/research/evaluation-plan.md](evaluation-plan.md) "Multimodal
+Metrics".
+
 ## Known Environment Dependency (Phase 1)
 
 Docling's default PDF pipeline downloads ML layout-detection and RapidOCR
@@ -135,6 +182,18 @@ not hand-typed — they are stable as long as the fixture files' byte
 content does not change (`document_id` is a SHA-256 hash of the file).
 This is a small dev benchmark for exercising and comparing retrieval
 modes during development, not a final evaluation dataset.
+
+The Phase 4 multimodal dev dataset
+(`backend/app/multimodal/evaluation/dataset.json`) is built the same way:
+directly against `study_notes.docx` (real Docling parsing/chunking) plus a
+synthetic silent WAV, with chunk ids derived by actually running ingestion
+(`backend/scripts/build_multimodal_eval_dataset.py`) rather than
+hand-typed. Its image/transcript categories used mocked VLM/OCR/
+transcription providers (no real model available in this environment) —
+labeled as such in the dataset's own `description` field. Its `equation`
+category is intentionally left unpopulated (no fixture produces a real
+`EQUATION` chunk, since Docling formula enrichment stays disabled) rather
+than fabricated.
 
 ## Experiment Configuration Policy
 

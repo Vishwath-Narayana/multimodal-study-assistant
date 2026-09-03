@@ -5,9 +5,15 @@ Status: these principles were **design-only through Phase 2**. As of
 time in this project (`app/generation/prompts.py`) — see
 [docs/architecture/generation.md](../architecture/generation.md)
 "Security" for how the requirements below are applied, and their
-documented limitations. Phases 5+ (multimodal, study engine, frontend,
-deployment) still have no built security framework beyond what this
-document already establishes.
+documented limitations. **Phase 4** extends untrusted-input validation to
+image artifacts (decompression-bomb/oversized-file guards) and audio
+uploads (magic-byte sniffing on top of the existing extension/size checks)
+— see [docs/architecture/multimodal.md](../architecture/multimodal.md)
+"Security". OCR text and VLM descriptions are treated as data through the
+same existing evidence-is-data prompt framing; no new prompt path was
+added for them. Phases 6+ (study engine, frontend, deployment) still have
+no built security framework beyond what this document already
+establishes.
 
 ## Core Principle
 
@@ -49,6 +55,33 @@ claims (e.g. a document containing "ignore previous instructions and ...").
 - **Isolation of system instructions from retrieved text** — *implemented*:
   the system prompt (`app.generation.prompts.SYSTEM_INSTRUCTIONS`) is a
   fixed constant, never derived from or modifiable by document content.
+
+## Phase 4 Additions
+
+- **Image artifact validation** — *implemented*:
+  `app.multimodal.security.validate_image_artifact` caps artifact file
+  size and sets Pillow's `MAX_IMAGE_PIXELS` before opening a file
+  (decompression-bomb guard), applied before OCR/VLM processing.
+- **Audio upload validation** — *implemented*:
+  `app.multimodal.security.validate_audio_upload` mirrors
+  `app.ingestion.validation.validate_upload`'s extension/size checks, plus
+  a magic-byte sniff (RIFF/WAVE, MP3 sync/ID3, MP4 `ftyp`) so a file
+  claiming an audio extension but containing arbitrary bytes is rejected
+  before reaching a transcription model.
+- **OCR/VLM/transcript text as data** — *implemented, unchanged prompt
+  path*: OCR text and VLM descriptions become part of `Chunk.content`
+  exactly like any other chunk, and only reach an LLM prompt through the
+  existing `render_grounded_prompt` evidence-is-data framing — no new
+  prompt construction path was introduced for multimodal content.
+- **Filename/path safety** — *reused, not duplicated*: audio storage uses
+  the same `app.ingestion.storage.sanitize_filename`/`DataPaths`
+  path-escape checks as document uploads.
+- **Model-generated content caveat**: VLM output can be inaccurate or,
+  like any LLM output, could in principle attempt to embed
+  instruction-like text; it is subject to the same "data, not
+  instructions" treatment as document content — no VLM-specific
+  mitigation beyond that was added, since the existing prompt framing
+  already applies to it uniformly.
 
 ## Explicit Non-Goals for Now
 

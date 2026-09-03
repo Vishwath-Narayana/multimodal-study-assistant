@@ -67,12 +67,20 @@ Planned end-state feature set (built incrementally by phase, see
 - Contradiction detection across sources
 - Evidence sufficiency checking and explicit abstention
 
-**Status:** none of the above are implemented yet. Phase 1 (document
-ingestion — upload, parsing, structure-aware chunking) and Phase 2
-(baseline retrieval — BM25, dense/FAISS, RRF, HyDE, cross-encoder
-reranking; see [docs/architecture/retrieval.md](docs/architecture/retrieval.md))
-are complete; the conversational/generation features above depend on
-generation (Phase 3), which has not started — see [Roadmap](#15-roadmap).
+**Status:** quiz/MCQ/flashcard generation is not implemented yet. Document
+ingestion (Phase 1), baseline retrieval (Phase 2 — BM25, dense/FAISS, RRF,
+HyDE, cross-encoder reranking; see
+[docs/architecture/retrieval.md](docs/architecture/retrieval.md)),
+grounded generation + explainability (Phase 3 — citations, attribution,
+token grounding, evidence sufficiency/abstention, contradiction detection;
+see [docs/architecture/generation.md](docs/architecture/generation.md)),
+and multimodal processing (Phase 5 in `docs/roadmap.md`'s numbering,
+"Phase 4" per the implementation brief it was built from — images/
+diagrams via VLM+OCR, tables, audio/Whisper transcription with
+timestamps; see
+[docs/architecture/multimodal.md](docs/architecture/multimodal.md)) are
+complete. Study-generation features depend on the study engine, which has
+not started — see [Roadmap](#15-roadmap).
 
 ## 5. Research Foundation
 
@@ -121,6 +129,7 @@ Baseline components:
 | Reranking | cross-encoder/ms-marco-MiniLM-L-6-v2 |
 | Generation | DeepSeek-R1 8B via Ollama (replaceable) |
 | Explainability | Chunk attribution, citation validation, token grounding |
+| Audio transcription | Whisper (via faster-whisper, replaceable) |
 
 Full detail: [docs/architecture/system-architecture.md](docs/architecture/system-architecture.md).
 
@@ -154,9 +163,10 @@ until experiments are actually run — see [Evaluation](#13-evaluation).
 | Lexical retrieval | BM25 (`rank-bm25`) |
 | Reranking | cross-encoder/ms-marco-MiniLM-L-6-v2 |
 | LLM (HyDE only, Phase 2) | Ollama-compatible local model, `deepseek-r1:1.5b` preferred |
-| LLM (generation, Phase 3) | Ollama-compatible local model *(planned)* |
-| Vision | LLaVA-Phi3 or replaceable VLM *(planned)* |
-| Audio | Whisper *(planned, when audio is implemented)* |
+| LLM (generation, Phase 3) | Ollama-compatible local model, `deepseek-r1:8b` preferred |
+| Vision (Phase 5/"4") | LLaVA-Phi3 or replaceable VLM via Ollama, optional |
+| OCR (Phase 5/"4") | Tesseract, optional |
+| Audio (Phase 5/"4") | Whisper via faster-whisper, optional |
 | Database | SQLite |
 | Backend tooling | uv, pytest, Ruff, mypy |
 | Frontend tooling | pnpm, oxlint |
@@ -269,9 +279,13 @@ seeds). See [docs/research/reproducibility.md](docs/research/reproducibility.md)
 ## 15. Roadmap
 
 See [docs/roadmap.md](docs/roadmap.md) for the full phase-by-phase plan.
-Current status: **Phase 1 — Document Ingestion** complete. See
-[docs/architecture/ingestion.md](docs/architecture/ingestion.md) for what
-was built.
+Current status: document ingestion, baseline retrieval, grounded
+generation + explainability, and multimodal processing are complete. See
+[docs/architecture/ingestion.md](docs/architecture/ingestion.md),
+[docs/architecture/retrieval.md](docs/architecture/retrieval.md),
+[docs/architecture/generation.md](docs/architecture/generation.md), and
+[docs/architecture/multimodal.md](docs/architecture/multimodal.md) for
+what was built.
 
 ## 16. License
 
