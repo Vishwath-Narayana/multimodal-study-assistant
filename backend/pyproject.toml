@@ -31,6 +31,21 @@ dependencies = [
     # already in the dependency tree as a test dependency and gives us a
     # nicer, typed API for one small client module.
     "httpx>=0.27",
+    # --- Multimodal (Phase 4) ---
+    # pytesseract: thin wrapper around the system `tesseract` OCR binary.
+    # The binary itself is an external, not-pip-installable dependency —
+    # OCRProvider.is_available() reports False (never fabricates OCR text)
+    # when it is not on PATH, same optional-provider pattern as VLM/Whisper
+    # below. Chosen over a pure-Python OCR engine (e.g. easyocr, which pulls
+    # in torch) to keep this local-first and CPU-light.
+    "pytesseract>=0.3.13",
+    # faster-whisper: CTranslate2-based Whisper inference, no torch
+    # dependency (unlike openai-whisper), CPU-compatible, and lets model
+    # size/device/compute type be configured (WHISPER_MODEL/WHISPER_DEVICE)
+    # without a GPU requirement — see app/multimodal/transcription.py. Model
+    # weights are downloaded from Hugging Face on first real transcription
+    # call, not at install time.
+    "faster-whisper>=1.2.1",
 ]
 
 [dependency-groups]
@@ -60,11 +75,13 @@ disallow_untyped_defs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra -m \"not integration and not requires_ollama and not requires_model\""
+addopts = "-ra -m \"not integration and not requires_ollama and not requires_model and not requires_tesseract and not requires_whisper\""
 markers = [
     "integration: exercises a real ML model download/inference (BGE, cross-encoder); not run by default or in CI.",
     "requires_ollama: needs a locally reachable Ollama server; auto-skipped when Ollama isn't reachable.",
     "requires_model: needs real model weights (sentence-transformers) downloaded from the internet; not run by default or in CI.",
+    "requires_tesseract: needs the system `tesseract` binary on PATH; auto-skipped when it isn't installed.",
+    "requires_whisper: downloads and runs a real faster-whisper model; not run by default or in CI.",
 ]
 
 [build-system]
