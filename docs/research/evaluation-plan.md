@@ -1,8 +1,9 @@
 # Evaluation Plan
 
-Status: **retrieval metrics + harness implemented (Phase 2)**; generation/
-trust/multimodal/research metrics below remain **plan only**, pending
-Phase 3+.
+Status: **retrieval metrics + harness implemented (Phase 2)**; **generation
+and trust/grounding metric functions implemented (Phase 3)**, but not yet
+run against real model output (see "Generation Metrics" below);
+multimodal/research metrics remain **plan only**, pending Phase 5+.
 
 ## Retrieval Metrics — implemented
 
@@ -53,18 +54,42 @@ configuration.
   are never to be edited by hand; re-run
   `scripts/run_retrieval_experiment.py` to reproduce or update them.
 
-## Generation Metrics
+## Generation Metrics — implemented, not yet run against real model output
 
-- BERTScore F1
-- ROUGE-L
-- Token F1
+`backend/app/generation/evaluation/metrics.py`, unit-tested with
+hand-computed examples (`tests/generation/test_evaluation_metrics.py`):
 
-## Trust / Grounding Metrics
+- Token F1 — implemented (`token_f1`).
+- ROUGE-L — implemented (`rouge_l`, from-scratch LCS-based, no `rouge-score` dependency).
+- BERTScore F1 — **not implemented**; `bertscore_f1` raises `NotImplementedError`
+  (requires the optional `bert-score` dependency, not installed).
 
-- Faithfulness
-- Citation validity
-- Token grounding ratio
-- Unsupported claim rate
+None of these have been run against real model output: the Phase 2 dev
+dataset (`app/retrieval/evaluation/dataset.json`) has relevance judgments
+but no reference *answer* text to score generated answers against — see
+[docs/architecture/generation.md](../architecture/generation.md)
+"Evaluation" and "Known Limitations".
+
+## Trust / Grounding Metrics — implemented, not yet run against real model output
+
+`compute_trust_metrics` in the same module:
+
+- Citation validity rate — implemented.
+- Unsupported claim rate — implemented (claim has no supporting chunk, or
+  its grounding ratio is below a configurable threshold).
+- Grounded-question rate / grounded-answer rate — implemented.
+- Correct-abstention rate / false-answer rate — implemented, but only
+  computable when a gold `answerable` label is supplied per example (no
+  such labeled dataset exists yet).
+- Faithfulness — **not implemented as a distinct metric**; token grounding
+  ratio and unsupported-claim rate are this project's operational proxies
+  for it (see docs/architecture/generation.md "Token Grounding" for why a
+  separate faithfulness score was not added on top of those).
+
+`backend/scripts/run_generation_experiment.py` computes the subset of these
+that don't need a reference answer (citation validity rate, mean token
+grounding ratio, conflict rate) per ablation stage, using a mocked
+generator by default.
 
 ## Multimodal Metrics
 

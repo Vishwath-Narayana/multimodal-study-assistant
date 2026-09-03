@@ -28,11 +28,12 @@ flowchart TD
     CC --> FINAL[Final Answer]
 ```
 
-Evidence sufficiency, abstention, and contradiction checking are **proposed
-extensions** (see README §7), not part of the reproduced EduRAG baseline —
-they are included in this diagram because they sit in the request path once
-built, but the baseline pipeline (README §6) stops at reranking → generation
-→ explainability.
+Evidence sufficiency, abstention, and contradiction checking are **our own
+additions on top of the reproduced EduRAG baseline** (see README §7), now
+**implemented as of Phase 3** — see
+[docs/architecture/generation.md](generation.md). The baseline pipeline
+itself (README §6) stops at reranking → generation → explainability; these
+three sit in the request path around that baseline, not inside it.
 
 ## 2. Ingestion Pipeline
 
@@ -88,9 +89,17 @@ flowchart TD
 
 ## 4. Generation Pipeline
 
+Status: **implemented for Phase 3** — see
+[docs/architecture/generation.md](generation.md) for the full design
+(evidence sufficiency, prompt construction, the `Generator`/`OllamaGenerator`
+abstraction, failure modes, and the EduRAG-baseline-vs-implementation-choice
+list, following the same documentation discipline as retrieval.md).
+
 ```mermaid
 flowchart LR
-    TopK[Top-K Evidence] --> Prompt[Prompt Construction]
+    TopK[Top-K Evidence] --> Suff{Evidence Sufficiency}
+    Suff -->|insufficient| Abstain[Abstention Response]
+    Suff -->|sufficient| Prompt[Grounded Prompt Construction]
     Prompt --> LLM[Local LLM via Ollama]
     LLM --> Answer[Draft Answer]
 ```
@@ -100,13 +109,19 @@ as instructions — see [docs/research/security.md](../research/security.md).
 
 ## 5. Explainability Pipeline
 
+Status: **implemented for Phase 3**, delivered together with generation
+(above) rather than as a separate later phase — see
+[docs/roadmap.md](../roadmap.md)'s Phase 3 scope note and
+[docs/architecture/generation.md](generation.md).
+
 ```mermaid
 flowchart LR
-    Answer[Draft Answer] --> Attr[Chunk Attribution]
-    Attr --> CiteVal[Citation Validation]
-    CiteVal --> Ground[Token Grounding<br/>exact / stem / substring match]
-    Ground --> Penalty[Unsupported Token Penalty]
-    Penalty --> Final[Final Answer + Citations + Scores]
+    Answer[Draft Answer] --> CiteVal[Citation Validation]
+    CiteVal --> Attr[Deterministic Chunk Attribution]
+    Attr --> Ground[Token Grounding<br/>exact / stem / substring match]
+    Ground --> Claims[Claim-Level Grounding]
+    Claims --> Contra[Contradiction Check]
+    Contra --> Final[Final Answer + Citations + Scores]
 ```
 
 ## 6. Study Engine

@@ -9,18 +9,27 @@ in the repository's development instructions).
 | 0 | Project foundation | ✅ Complete |
 | 1 | Document ingestion | ✅ Complete |
 | 2 | Baseline retrieval | ✅ Complete |
-| 3 | Grounded generation | Not started |
-| 4 | Explainability | Not started |
+| 3 | Grounded generation + explainability | ✅ Complete |
+| 4 | ~~Explainability~~ (merged into Phase 3) | — |
 | 5 | Multimodal retrieval | Not started |
 | 6 | Study engine | Not started |
 | 7 | Improved retrieval | Not started |
-| 8 | Evidence sufficiency + abstention | Not started |
-| 9 | Contradiction detection | Not started |
+| 8 | ~~Evidence sufficiency + abstention~~ (merged into Phase 3) | — |
+| 9 | ~~Contradiction detection~~ (merged into Phase 3) | — |
 | 10 | Frontend integration | Not started |
 | 11 | Evaluation + ablation | Not started |
 | 12 | Security + hardening | Not started |
 | 13 | Final experiments | Not started |
 | 14 | Research documentation | Not started |
+
+**Phase 3 scope note**: the Phase 3 implementation brief this phase was
+built against bundled explainability, evidence sufficiency/abstention, and
+contradiction detection into "Phase 3" as one delivered unit, rather than
+the four separate rows (3/4/8/9) this table originally listed. Rows 4, 8,
+and 9 are struck through here rather than silently deleted, so the
+renumbering is visible; no phase after Phase 3 was pulled forward or
+skipped — only the finer-grained split of generation-adjacent work was
+collapsed.
 
 Phase 0 scope: repository structure, backend/frontend scaffolding, tooling
 (lint/type-check/test), `/health` endpoint, minimal frontend shell, and the
@@ -55,3 +64,24 @@ fixtures — see [docs/architecture/retrieval.md](architecture/retrieval.md).
 No answer generation, citations, grounding, contradiction detection,
 evidence sufficiency, abstention, study engine, or multimodal/audio
 retrieval are implemented in Phase 2 — those are Phase 3+.
+
+Phase 3 scope: evidence sufficiency / abstention (heuristic: chunk count +
+lexical overlap + optional reranker score), grounded LLM generation
+(`Generator`/`OllamaGenerator`, DeepSeek-R1 8B baseline via Ollama, mockable
+in tests), a strict grounded prompt keeping system instructions/evidence/
+question in separate labeled sections, `[chunk:<id>]` citation extraction +
+deterministic validation against the retrieved evidence set, deterministic
+EduRAG-style chunk attribution (0.7 x cross-encoder relevance + 0.3 x
+lexical overlap), EduRAG-style token grounding (exact/stem/substring/
+ungrounded matching hierarchy), claim-level grounding, lightweight lexical
+contradiction/source-consensus checking, the `POST /chat/query` endpoint,
+generation/trust evaluation metrics (Token F1, ROUGE-L; BERTScore left
+unimplemented — optional dependency not installed), and ablation support
+for the full A–G stage ladder — see
+[docs/architecture/generation.md](architecture/generation.md). No quizzes,
+flashcards, summaries-as-a-tool, comparison tools, audio/Whisper, new
+multimodal ingestion, image understanding, advanced conversation memory, or
+chat frontend are implemented in Phase 3 — those remain later phases. Phase
+1 ingestion and Phase 2 retrieval are unchanged by Phase 3 (including the
+documented BGE chunking/truncation issue, left as-is per that issue's own
+disposition).

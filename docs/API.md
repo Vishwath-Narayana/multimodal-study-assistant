@@ -1,10 +1,11 @@
 # API Design
 
-Status: `GET /health` (Phase 0), the `/documents` endpoints (Phase 1), and
-`POST /retrieval/search` (Phase 2) are implemented. Everything else below
-is the planned API surface for later phases — documented ahead of
-implementation so generation/explainability work has a stable contract to
-build against, per [docs/roadmap.md](roadmap.md).
+Status: `GET /health` (Phase 0), the `/documents` endpoints (Phase 1),
+`POST /retrieval/search` (Phase 2), and `POST /chat/query` (Phase 3) are
+implemented. Everything else below is the planned API surface for later
+phases — documented ahead of implementation so study-engine/multimodal
+work has a stable contract to build against, per
+[docs/roadmap.md](roadmap.md).
 
 ## Implemented
 
@@ -118,6 +119,53 @@ number.
 **Response `503`** — HyDE requested but not configured/unreachable, or an
 embedding/reranker model failed to load.
 
+### `POST /chat/query`
+
+Grounded generation + explainability (Phase 3) — see
+[docs/architecture/generation.md](architecture/generation.md) for the full
+pipeline. Not a chat/session API: no conversation memory, one query in, one
+structured response out.
+
+**Request**
+```json
+{ "query": "What is photosynthesis?", "retrieval_mode": "full_baseline", "top_k": 5 }
+```
+`retrieval_mode` accepts the same six values as `POST /retrieval/search`.
+
+**Response `200`**
+```json
+{
+  "request_id": "…",
+  "query": "What is photosynthesis?",
+  "answer": "Photosynthesis converts light energy into chemical energy [chunk:c1].",
+  "answerable": true,
+  "sufficiency": { "sufficient": true, "reason": "Evidence passed sufficiency checks." },
+  "evidence": [
+    {
+      "chunk_id": "c1", "document_id": "…", "filename": "notes.pdf",
+      "page": 4, "section": "Photosynthesis", "rank": 1,
+      "retrieval_source": "reranker", "rerank_score": 4.1,
+      "content_preview": "Photosynthesis converts light energy…",
+      "attribution_score": 0.87, "attribution_rank": 1
+    }
+  ],
+  "citations": [ { "chunk_id": "c1", "valid": true, "status": "valid", "document_id": "…", "filename": "notes.pdf", "page": 4, "section": "Photosynthesis" } ],
+  "grounding": { "grounding_ratio": 0.83, "grounded_token_count": 10, "total_token_count": 12 },
+  "claim_groundings": [ { "claim": "Photosynthesis converts light energy into chemical energy.", "supporting_chunk_ids": ["c1"], "grounding_ratio": 0.9 } ],
+  "contradictions": { "has_conflict": false, "conflicts": [] },
+  "timing": { "retrieval_ms": 12.0, "sufficiency_ms": 0.1, "generation_ms": 800.0, "citation_validation_ms": 0.05, "attribution_ms": 0.2, "grounding_ms": 0.3, "contradiction_ms": 0.1, "total_ms": 813.0 }
+}
+```
+When `answerable` is `false` (evidence judged insufficient), `answer` is a
+fixed abstention message, `citations`/`claim_groundings` are empty, and
+`grounding` is `null` — the LLM is never called for an abstention.
+
+**Response `400`** — empty query, or invalid `retrieval_mode` (same mapping
+as `POST /retrieval/search`).
+**Response `502`** — the LLM provider was reachable but generation failed.
+**Response `503`** — the LLM provider is unreachable, or a Phase 2
+dependency (HyDE, embedding/reranker model) failed to load.
+
 ## Planned
 
 ### Documents
@@ -126,12 +174,11 @@ embedding/reranker model failed to load.
 
 ### Chat
 
-- `POST /chat/query` — ask a question; returns a grounded answer with citations, or an abstention.
-- `GET /chat/{session_id}` — retrieve a session's message history.
+- `GET /chat/{session_id}` — retrieve a session's message history (requires conversation memory, not yet implemented).
 
 ### Explainability
 
-- `GET /evidence/{answer_id}` — retrieve the evidence chunks, rerank scores, and attribution scores behind a given answer.
+- `GET /evidence/{answer_id}` — retrieve a *persisted* answer's evidence/citations/scores by id (Phase 3's `/chat/query` already returns all of this inline per-request; this endpoint would require persisting past answers, which Phase 3 does not do).
 
 ### Study Engine
 
