@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from rank_bm25 import BM25Okapi
 
 from app.ingestion.models import Chunk
-from app.retrieval.corpus import eligible_chunks
+from app.retrieval.corpus import chunk_metadata, eligible_chunks
 from app.retrieval.errors import NoIndexedChunksError
 from app.retrieval.interfaces import Retriever
 from app.retrieval.models import RetrievalCandidate
@@ -109,7 +109,7 @@ class BM25Retriever(Retriever):
                     page=chunk.page,
                     section=chunk.section,
                     parent_id=chunk.parent_id,
-                    metadata={"chunk_type": chunk.chunk_type.value},
+                    metadata=chunk_metadata(chunk),
                 )
             )
         return results
