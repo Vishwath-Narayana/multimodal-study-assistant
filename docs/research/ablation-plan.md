@@ -52,8 +52,38 @@ excludes — hierarchical retrieval, multimodal evidence) remain unimplemented.
 | H1 | G + parent/child hierarchical retrieval | Not started (Phase 7+) |
 | ~~H2~~ | ~~H1 + evidence sufficiency detection + abstention~~ | Implemented in Phase 3 (part of row G, not a separate extension) |
 | ~~H3~~ | ~~H2 + contradiction detection~~ | Implemented in Phase 3 (part of row G, not a separate extension) |
-| H4 | H3 + visual evidence preservation (image + OCR + VLM, not caption-only) | Not started (Phase 5+) |
-| H | All of the above together (full baseline + our improvements) | Partially implemented (sufficiency + contradiction, via row G); hierarchical + visual evidence still pending |
+| H4 | H3 + visual evidence preservation (image + OCR + VLM, not caption-only) | **Implemented as of Phase 4** — see [docs/architecture/multimodal.md](../architecture/multimodal.md) |
+| H | All of the above together (full baseline + our improvements) | Partially implemented (sufficiency + contradiction, via row G; visual evidence preservation, via H4); hierarchical retrieval still pending |
+
+## Phase 4 Multimodal Ablation Rows
+
+Extends the ladder above with multimodal-specific comparisons (spec
+section 30). Rows A-G reuse `RetrievalMode`/`GenerationServiceConfig`
+exactly as already implemented — no new toggle infrastructure was needed
+for the text-side rows, since multimodal chunks flow through the same
+`RetrievalService`/`GenerationService` (see
+[docs/architecture/multimodal.md](../architecture/multimodal.md)
+"Retrieval Integration").
+
+| Configuration | Adds | Status |
+|---|---|---|
+| A | Text-only baseline (image/table/transcript chunks excluded from the corpus) | Runnable: pass a chunk set pre-filtered to text types to `BM25Retriever.from_chunks`/`FaissIndexStore.build` |
+| B | A + OCR (image chunks with only `ocr_text` populated) | Runnable: configure `OCR_PROVIDER=tesseract`, `VLM_PROVIDER=""` |
+| C | A + VLM descriptions (image chunks with only `vlm_description` populated) | Runnable: configure `VLM_PROVIDER=ollama`, `OCR_PROVIDER=""` |
+| D | A + OCR + VLM | Runnable: configure both providers (Phase 4 default combined behavior) |
+| E | A + tables | Already included in "A" as implemented here (tables were never excluded from the Phase 1-3 corpus) — this row is not separately distinguishable from A given this project's table-indexing history; noted rather than silently dropped |
+| F | A + transcript chunks | Runnable: include audio-ingested documents in the corpus |
+| G | Full multimodal textual representation (D + E + F together) | Runnable: the Phase 4 default configuration with all providers enabled |
+| H | Caption/OCR retrieval (row G) | Implemented — this is what row G above measures |
+| I | Direct visual embedding retrieval | **Not implemented** — no CLIP/visual-embedding model was added (see docs/architecture/multimodal.md "Visual Embeddings — Explicitly Not Implemented") |
+| J | Hybrid visual + textual retrieval | **Not implemented** — depends on I |
+
+**Not yet run**: no VLM/OCR/Whisper model was available in this
+environment (see docs/research/reproducibility.md "Known Environment
+Dependency (Phase 4)"), so rows B/C/D/F/G above have not actually been
+executed against real model output — only their configuration mechanism
+is implemented and confirmed wired end-to-end (mocked providers, see the
+Phase 4 dev dataset). No results are reported until they are.
 
 ## Method
 

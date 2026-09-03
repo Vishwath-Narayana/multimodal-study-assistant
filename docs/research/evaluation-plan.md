@@ -91,13 +91,40 @@ that don't need a reference answer (citation validity rate, mean token
 grounding ratio, conflict rate) per ablation stage, using a mocked
 generator by default.
 
-## Multimodal Metrics
+## Multimodal Metrics — implemented (Phase 4), not yet run at scale
 
-- Visual retrieval accuracy
-- Table retrieval accuracy
-- Diagram retrieval accuracy
-- Transcript retrieval accuracy
-- Timestamp citation accuracy
+`backend/app/multimodal/evaluation/metrics.py`, unit-tested with
+hand-computed examples (`tests/multimodal/test_evaluation_metrics.py`):
+
+- Visual MRR / Visual Recall@5 (`visual_metrics`) — the existing
+  `app.retrieval.evaluation.metrics.aggregate` MRR/Recall computation,
+  scoped to queries tagged `modality == "image"`. Not new math: reusing
+  the same ranking metrics keeps a "Visual MRR" comparable to the plain
+  MRR it is a subset of.
+- Table retrieval accuracy (`table_retrieval_accuracy`) — same, scoped to
+  `modality == "table"`.
+- Transcript retrieval accuracy (`transcript_retrieval_accuracy`) — same,
+  scoped to `modality == "transcript"`.
+- Timestamp citation accuracy (`timestamp_citation_accuracy`) — the one
+  genuinely new metric: fraction of predicted `(audio_start, audio_end)`
+  citations whose start falls within a configurable tolerance of the
+  gold segment's start.
+- Diagram retrieval accuracy is **not a separate metric** — Docling
+  cannot distinguish a diagram from a photo (see
+  docs/architecture/multimodal.md "Unified Chunk Representation"), so
+  both are the `image` modality tag above; a distinct "diagram" metric
+  would imply a distinction the pipeline does not actually make.
+
+Run against the Phase 4 dev dataset
+(`backend/app/multimodal/evaluation/dataset.json`, 8 queries, mocked
+VLM/OCR/transcription — see
+[docs/research/reproducibility.md](reproducibility.md)): **not measured**.
+No experiment runner script was written to execute these metrics against
+that dataset end-to-end in this environment (the metrics themselves are
+implemented and unit-tested; wiring them to a live retrieval run over the
+dev dataset, the way `run_retrieval_experiment.py` does for Phase 2, is
+left for a future pass — the dataset and metric functions this would need
+already exist). No fabricated numbers are reported in place of this.
 
 ## Proposed Research Metrics (for our extensions)
 

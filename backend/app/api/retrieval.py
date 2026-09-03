@@ -215,6 +215,7 @@ def search(
                 dense_score=r.dense_score,
                 rrf_score=r.rrf_score,
                 rerank_score=r.rerank_score,
+                chunk_type=r.metadata.get("chunk_type"),
             )
             for r in results
         ],

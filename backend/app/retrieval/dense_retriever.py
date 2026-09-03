@@ -12,6 +12,7 @@ is the original query or HyDE-generated text — this class has no opinion.
 from __future__ import annotations
 
 from app.ingestion.models import Chunk
+from app.retrieval.corpus import chunk_metadata
 from app.retrieval.embeddings import EmbeddingProvider
 from app.retrieval.errors import EmptyQueryError
 from app.retrieval.faiss_index import FaissIndexStore
@@ -59,7 +60,7 @@ class DenseRetriever(Retriever):
                     page=chunk.page,
                     section=chunk.section,
                     parent_id=chunk.parent_id,
-                    metadata={"chunk_type": chunk.chunk_type.value},
+                    metadata=chunk_metadata(chunk),
                 )
             )
         return results

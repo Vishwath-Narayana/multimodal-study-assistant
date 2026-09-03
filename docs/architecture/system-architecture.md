@@ -41,27 +41,34 @@ Status: **implemented for Phase 1** through structure-aware chunking and
 SQLite persistence — see [docs/architecture/ingestion.md](ingestion.md)
 for the actual pipeline, canonical model, and documented limitations.
 Embedding and FAISS indexing (below) are **implemented for Phase 2** — see
-[docs/architecture/retrieval.md](retrieval.md); perceptual-hash image
-dedup and VLM/OCR description remain Phase 5.
+[docs/architecture/retrieval.md](retrieval.md). VLM/OCR image enrichment,
+table/equation representation helpers, and audio/Whisper ingestion are
+**implemented for Phase 4** — see
+[docs/architecture/multimodal.md](multimodal.md). Perceptual-hash image
+dedup remains unimplemented (not part of the Phase 4 brief).
 
 ```mermaid
 flowchart LR
     Upload --> Validate[Validate + SHA-256 hash]
     Validate --> Parse[Docling parsing]
     Parse --> Extract[Text / tables / images / equations]
-    Extract --> Chunk[Structure-aware chunking, ~512 tokens]
-    Chunk --> Store[(SQLite: documents, chunks)]
-    Store -.Phase 5.-> Dedup[Perceptual-hash dedup for images]
-    Store -.Phase 5.-> Visual[VLM description + OCR]
+    Extract --> Enrich[Phase 4: OCR + VLM description]
+    Enrich --> Chunk[Structure-aware chunking, ~512 tokens]
+    Chunk --> Store[(SQLite: documents, chunks, artifacts)]
     Store -.Phase 2.-> Embed[Embed chunks - bge-small-en-v1.5]
     Embed -.Phase 2.-> Index[(FAISS index)]
+    Audio[Audio upload] -.Phase 4.-> Whisper[Whisper transcription]
+    Whisper -.Phase 4.-> TChunk[Timestamp-aware chunking]
+    TChunk -.Phase 4.-> Store
 ```
 
 Each chunk retains provenance: source document, page/section, chunk type
-(heading/paragraph/list/table/image/equation/code/caption), and — for
-image chunks — the extracted image path (where Docling provides the
-bytes; see ingestion.md for the HTML exception). OCR text and VLM
-descriptions are Phase 5 additions, not yet implemented.
+(heading/paragraph/list/table/image/equation/code/caption/transcript),
+and — for image chunks — the extracted image path (where Docling provides
+the bytes; see ingestion.md for the HTML exception) plus, as of Phase 4,
+OCR text/VLM description/vision status and a link to the `artifacts` table
+recording the original artifact. Perceptual-hash image dedup remains
+unimplemented.
 
 ## 3. Retrieval Pipeline
 
@@ -86,6 +93,13 @@ flowchart TD
     RRF --> Rerank[Cross-Encoder Reranker]
     Rerank --> TopK[Top-K Evidence]
 ```
+
+As of Phase 4, chunks eligible for BM25/FAISS indexing include enriched
+image chunks (VLM description + OCR + surrounding text) and audio
+transcript chunks alongside text/table chunks — no new retrieval mode or
+index was added; the existing pipeline above now simply has more, and more
+varied, content indexed underneath it. See
+[docs/architecture/multimodal.md](multimodal.md) "Retrieval Integration".
 
 ## 4. Generation Pipeline
 

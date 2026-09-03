@@ -216,4 +216,11 @@ def _structured_chunk(
         image_path=block.image_path,
         table_content=block.table_content,
         equation_content=block.equation_content,
+        ocr_text=block.ocr_text,
+        ocr_status=block.ocr_status,
+        vlm_description=block.vlm_description,
+        vision_status=block.vision_status,
+        artifact_id=block.artifact_id,
+        audio_start=block.audio_start,
+        audio_end=block.audio_end,
     )

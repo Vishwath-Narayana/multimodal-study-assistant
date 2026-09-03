@@ -1,12 +1,14 @@
 # Database Design
 
-Status: **`documents` and `chunks` are implemented** (Phase 1) — schema
-defined once in `backend/app/ingestion/schema.sql`, loaded by
+Status: **`documents` and `chunks` are implemented** (Phase 1, extended in
+Phase 4), and **`artifacts` is implemented** (Phase 4) — schema defined
+once in `backend/app/ingestion/schema.sql`, loaded by
 `app/ingestion/repository.py::init_db`. Everything below that (embeddings
 onward) is still a design-only plan for later phases. The implemented
 tables extend this Phase 0 design with the columns ingestion actually
 needs (status tracking, extracted metadata, per-chunk structured-content
-fields) — differences from the original design are called out inline.
+and multimodal fields) — differences from the original design are called
+out inline.
 
 ## Principles
 
@@ -55,13 +57,37 @@ Structure-aware chunks produced by ingestion.
 | section | TEXT, nullable | deepest heading title |
 | heading_path | TEXT, nullable | *(added in Phase 1)* JSON array of ancestor heading titles |
 | token_count | INTEGER | *(added in Phase 1)* whitespace-approximate token count |
-| image_path | TEXT, nullable | path relative to `data/`, kept even before any VLM description exists (Phase 5) |
+| image_path | TEXT, nullable | path relative to `data/`, kept even before any VLM description exists |
 | table_content | TEXT, nullable | *(added in Phase 1)* JSON `list[list[str]]` grid |
 | equation_content | TEXT, nullable | raw equation text where Docling detects one (see ingestion.md §4 limitations) |
+| ocr_text | TEXT, nullable | *(added in Phase 4)* OCR-extracted text from an image artifact |
+| ocr_status | TEXT, nullable | *(added in Phase 4)* `VisionStatus`: not_attempted / available / unavailable / failed |
+| vlm_description | TEXT, nullable | *(added in Phase 4)* VLM-generated image/diagram description |
+| vision_status | TEXT, nullable | *(added in Phase 4)* same enum, for the VLM description |
+| artifact_id | TEXT, nullable | *(added in Phase 4)* FK to `artifacts.id` |
+| audio_start | REAL, nullable | *(added in Phase 4)* seconds, for `chunk_type = transcript` |
+| audio_end | REAL, nullable | *(added in Phase 4)* seconds, for `chunk_type = transcript` |
 
-Not yet added: `audio_start`/`audio_end` (Phase 5, transcripts) — deferred
-until audio ingestion is actually implemented rather than added as unused
-columns now.
+The Phase 4 columns were added via an additive `ALTER TABLE` migration
+(`app.ingestion.repository._migrate_phase4_columns`, run on every
+`init_db()` call) rather than a schema rewrite, so an existing Phase 1-3
+database keeps its `documents`/`chunks` data.
+
+### artifacts — implemented (Phase 4)
+Provenance for original image/audio artifacts (see
+[docs/architecture/multimodal.md](multimodal.md) "Provenance").
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | deterministic (`<document_id>::artifact::<block_id>` for images, `<document_id>::artifact::audio` for audio) |
+| document_id | TEXT FK → documents | |
+| chunk_id | TEXT, nullable | backfilled once chunking assigns the final chunk id (images); stays `NULL` for audio (one artifact, many chunks — see multimodal.md) |
+| artifact_type | TEXT | `image` / `audio` |
+| storage_path | TEXT | relative to `data/`, never absolute |
+| mime_type | TEXT, nullable | |
+| sha256 | TEXT, nullable | |
+| metadata | TEXT, nullable | JSON, e.g. `{"page": 7, "vision_status": "available"}` |
+| created_at | TEXT (ISO 8601) | |
 
 ### embeddings
 Vector index pointers, decoupled from the FAISS index itself.

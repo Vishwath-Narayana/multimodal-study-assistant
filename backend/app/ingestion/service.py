@@ -10,15 +10,20 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from app.ingestion.chunking import ChunkingConfig, chunk_document
 from app.ingestion.errors import IngestionError, ParserError, ValidationError
 from app.ingestion.hashing import document_id_from_hash, sha256_bytes
-from app.ingestion.models import ParsedDocument
+from app.ingestion.models import BlockType, ParsedDocument
 from app.ingestion.parsers.base import DocumentParser
 from app.ingestion.repository import ChunkRepository, DocumentRepository, DocumentUpsert
 from app.ingestion.storage import DataPaths, save_upload
 from app.ingestion.validation import validate_upload
+
+if TYPE_CHECKING:
+    from app.multimodal.image_processing import ImageEnrichmentService
+    from app.multimodal.repository import ArtifactRepository
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +51,8 @@ class IngestionService:
         supported_extensions: tuple[str, ...],
         max_upload_size_bytes: int,
         chunking_config: ChunkingConfig,
+        image_enricher: ImageEnrichmentService | None = None,
+        artifact_repo: ArtifactRepository | None = None,
     ) -> None:
         self._parser = parser
         self._documents = document_repo
@@ -54,6 +61,12 @@ class IngestionService:
         self._supported_extensions = supported_extensions
         self._max_upload_size_bytes = max_upload_size_bytes
         self._chunking_config = chunking_config
+        # Phase 4: optional, so every existing caller/test that constructs
+        # an `IngestionService` without these keeps working unchanged —
+        # ingestion without image enrichment configured behaves exactly as
+        # it did in Phase 1 (image blocks kept, no OCR/VLM attempted).
+        self._image_enricher = image_enricher
+        self._artifact_repo = artifact_repo
 
     def ingest(self, filename: str, data: bytes) -> IngestionResult:
         started = time.monotonic()
@@ -99,8 +112,19 @@ class IngestionService:
         try:
             save_upload(self._paths, document_id, validated.safe_filename, data)
             parsed = self._parse(document_id, validated.original_filename, file_hash)
+            if self._image_enricher is not None:
+                parsed.blocks = [
+                    self._image_enricher.enrich(document_id, block)
+                    if block.type == BlockType.IMAGE
+                    else block
+                    for block in parsed.blocks
+                ]
             chunks = chunk_document(document_id, parsed.blocks, self._chunking_config)
             self._chunks.replace_for_document(document_id, chunks)
+            if self._artifact_repo is not None:
+                for chunk in chunks:
+                    if chunk.artifact_id:
+                        self._artifact_repo.set_chunk_id(chunk.artifact_id, chunk.id)
 
             stored = self._documents.upsert(
                 DocumentUpsert(

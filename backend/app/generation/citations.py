@@ -81,6 +81,9 @@ class DeterministicCitationValidator(CitationValidator):
                     document_id=item.document_id,
                     page=item.page,
                     section=item.section,
+                    chunk_type=item.metadata.get("chunk_type"),
+                    audio_start=item.metadata.get("audio_start"),
+                    audio_end=item.metadata.get("audio_end"),
                 )
             )
         return citations

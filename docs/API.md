@@ -1,11 +1,11 @@
 # API Design
 
 Status: `GET /health` (Phase 0), the `/documents` endpoints (Phase 1),
-`POST /retrieval/search` (Phase 2), and `POST /chat/query` (Phase 3) are
+`POST /retrieval/search` (Phase 2), `POST /chat/query` (Phase 3), and
+`GET /documents/{id}/artifacts` + `GET /chunks/{id}` (Phase 4) are
 implemented. Everything else below is the planned API surface for later
-phases — documented ahead of implementation so study-engine/multimodal
-work has a stable contract to build against, per
-[docs/roadmap.md](roadmap.md).
+phases — documented ahead of implementation so the study-engine work has
+a stable contract to build against, per [docs/roadmap.md](roadmap.md).
 
 ## Implemented
 
@@ -20,16 +20,24 @@ Liveness check.
 
 ### `POST /documents/upload`
 
-Uploads a document (multipart form field `file`) and runs the full
-synchronous ingestion pipeline (validate → hash → parse → chunk →
-persist) — see [docs/architecture/ingestion.md](architecture/ingestion.md).
+Uploads a document **or audio file** (multipart form field `file`) and
+runs the full synchronous ingestion pipeline. For `pdf`/`docx`/`pptx`/
+`html`/`htm`: validate → hash → parse → **Phase 4: OCR/VLM image
+enrichment** → chunk → persist — see
+[docs/architecture/ingestion.md](architecture/ingestion.md) and
+[docs/architecture/multimodal.md](architecture/multimodal.md). For
+`wav`/`mp3`/`m4a` (Phase 4): validate → hash → save → Whisper
+transcription → timestamp-aware chunking → persist. One endpoint handles
+every supported modality — the extension of the uploaded file selects
+which pipeline runs.
+
 **Implementation choice**: Phase 1 does not implement a separate
 `POST /documents/ingest` trigger — upload and ingestion are one
 synchronous call, since there is no background worker yet (see
 docs/roadmap.md Phase 1 scope). A separate ingest-trigger endpoint may be
 introduced if/when ingestion becomes asynchronous.
 
-Supported types, size limit, and chunking parameters are configured via
+Supported types, size limits, and chunking parameters are configured via
 `Settings` (`.env.example`), not hard-coded.
 
 **Response `200`**
@@ -68,6 +76,39 @@ Returns one document's stored metadata and status.
 
 **Response `200`** — the same shape as one entry in `GET /documents`.
 **Response `404`** — unknown document id.
+
+### `GET /documents/{document_id}/artifacts` (Phase 4)
+
+Lists provenance records for a document's original image/audio artifacts
+— see [docs/architecture/multimodal.md](architecture/multimodal.md)
+"Provenance".
+
+**Response `200`**
+```json
+{
+  "artifacts": [
+    {
+      "id": "…", "document_id": "…", "chunk_id": "…",
+      "artifact_type": "image", "storage_path": "processed/…/images/….png",
+      "mime_type": "image/png", "sha256": "…",
+      "metadata": {"page": 7, "vision_status": "available"},
+      "created_at": "…"
+    }
+  ]
+}
+```
+`storage_path` is relative to the data root — never an absolute filesystem
+path. **Response `404`** — unknown document id.
+
+### `GET /chunks/{chunk_id}` (Phase 4)
+
+Returns one chunk's full stored representation, including every
+multimodal field (`ocr_text`, `vlm_description`, `vision_status`,
+`audio_start`/`audio_end`, `artifact_id`, `table_content`,
+`equation_content`). A research/debug endpoint — unlike
+`content_preview` elsewhere, this returns full `content`.
+
+**Response `404`** — unknown chunk id.
 
 ### `POST /retrieval/search`
 
@@ -112,7 +153,10 @@ pipeline design.
 path is ever exposed. `score`/`rank` are the *final* stage's values;
 `bm25_*`/`dense_*`/`rrf_score`/`rerank_score` preserve each pipeline
 stage's contribution when applicable — never collapsed into one ambiguous
-number.
+number. As of Phase 4, each result also carries `chunk_type` (e.g.
+`"image"`, `"table"`, `"transcript"`) when the underlying chunk's
+metadata includes it — see
+[docs/architecture/multimodal.md](architecture/multimodal.md).
 
 **Response `400`** — empty query or invalid `mode`.
 **Response `409`** — no chunks indexed yet.
@@ -159,6 +203,15 @@ structured response out.
 When `answerable` is `false` (evidence judged insufficient), `answer` is a
 fixed abstention message, `citations`/`claim_groundings` are empty, and
 `grounding` is `null` — the LLM is never called for an abstention.
+
+As of Phase 4, `evidence` items and `citations` also carry `chunk_type`
+plus any of `audio_start`/`audio_end`/`ocr_text`/`vlm_description`/
+`original_artifact`/`table_content` the underlying chunk has, so a
+citation identifies its modality — e.g. an audio citation reports
+`"chunk_type": "transcript", "audio_start": 751.0, "audio_end": 788.0`
+alongside its `[chunk:<id>]` marker. See
+[docs/architecture/multimodal.md](architecture/multimodal.md)
+"Generation + Citations".
 
 **Response `400`** — empty query, or invalid `retrieval_mode` (same mapping
 as `POST /retrieval/search`).

@@ -34,6 +34,9 @@ class SearchResultItem(BaseModel):
     dense_score: float | None = None
     rrf_score: float | None = None
     rerank_score: float | None = None
+    # Phase 4: modality, from RetrievalResult.metadata (see
+    # app.retrieval.corpus.chunk_metadata).
+    chunk_type: str | None = None
 
 
 class TimingResponse(BaseModel):

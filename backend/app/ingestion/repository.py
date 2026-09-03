@@ -16,7 +16,23 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from importlib import resources
 
-from app.ingestion.models import BlockType, Chunk
+from app.ingestion.models import BlockType, Chunk, VisionStatus
+
+# Phase 4 columns added to `chunks` after the table already existed in
+# Phase 1/2/3 databases. `CREATE TABLE IF NOT EXISTS` (schema.sql) does not
+# retrofit columns onto an existing table, so those get added here via
+# `ALTER TABLE ... ADD COLUMN`, guarded against "column already exists" so
+# this is safe to run on every startup (fresh DB, Phase 1-3 DB, or an
+# already-migrated Phase 4 DB) — see docs/architecture/database.md.
+_CHUNKS_PHASE4_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("ocr_text", "TEXT"),
+    ("ocr_status", "TEXT"),
+    ("vlm_description", "TEXT"),
+    ("vision_status", "TEXT"),
+    ("artifact_id", "TEXT"),
+    ("audio_start", "REAL"),
+    ("audio_end", "REAL"),
+)
 
 
 def get_connection(database_path: str) -> sqlite3.Connection:
@@ -29,7 +45,16 @@ def get_connection(database_path: str) -> sqlite3.Connection:
 def init_db(conn: sqlite3.Connection) -> None:
     schema_sql = resources.files("app.ingestion").joinpath("schema.sql").read_text()
     conn.executescript(schema_sql)
+    _migrate_phase4_columns(conn)
     conn.commit()
+
+
+def _migrate_phase4_columns(conn: sqlite3.Connection) -> None:
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(chunks)").fetchall()}
+    for column, sql_type in _CHUNKS_PHASE4_COLUMNS:
+        if column in existing:
+            continue
+        conn.execute(f"ALTER TABLE chunks ADD COLUMN {column} {sql_type}")
 
 
 @dataclass
@@ -140,6 +165,10 @@ class ChunkRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
 
+    def get_by_id(self, chunk_id: str) -> Chunk | None:
+        row = self._conn.execute("SELECT * FROM chunks WHERE id = ?", (chunk_id,)).fetchone()
+        return _row_to_chunk(row) if row else None
+
     def replace_for_document(self, document_id: str, chunks: Iterable[Chunk]) -> None:
         """Delete any existing chunks for this document and insert the given ones.
 
@@ -153,8 +182,10 @@ class ChunkRepository:
             INSERT INTO chunks (
                 id, document_id, parent_id, order_index, chunk_type, content,
                 page, section, heading_path, token_count, image_path,
-                table_content, equation_content
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                table_content, equation_content, ocr_text, ocr_status,
+                vlm_description, vision_status, artifact_id, audio_start,
+                audio_end
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -171,6 +202,13 @@ class ChunkRepository:
                     chunk.image_path,
                     json.dumps(chunk.table_content) if chunk.table_content else None,
                     chunk.equation_content,
+                    chunk.ocr_text,
+                    chunk.ocr_status.value,
+                    chunk.vlm_description,
+                    chunk.vision_status.value,
+                    chunk.artifact_id,
+                    chunk.audio_start,
+                    chunk.audio_end,
                 )
                 for chunk in chunks
             ],
@@ -213,4 +251,17 @@ def _row_to_chunk(row: sqlite3.Row) -> Chunk:
         image_path=row["image_path"],
         table_content=json.loads(row["table_content"]) if row["table_content"] else None,
         equation_content=row["equation_content"],
+        ocr_text=row["ocr_text"],
+        ocr_status=(
+            VisionStatus(row["ocr_status"]) if row["ocr_status"] else VisionStatus.NOT_ATTEMPTED
+        ),
+        vlm_description=row["vlm_description"],
+        vision_status=(
+            VisionStatus(row["vision_status"])
+            if row["vision_status"]
+            else VisionStatus.NOT_ATTEMPTED
+        ),
+        artifact_id=row["artifact_id"],
+        audio_start=row["audio_start"],
+        audio_end=row["audio_end"],
     )

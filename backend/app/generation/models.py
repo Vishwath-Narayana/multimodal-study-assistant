@@ -43,6 +43,11 @@ class Citation:
     CitationStatus.VALID`); an invalid citation carries only the raw
     chunk_id the model emitted, so the response can show what was rejected
     without fabricating metadata for it.
+
+    `chunk_type`/`audio_start`/`audio_end` (Phase 4) identify a citation's
+    modality (spec section 21: "Extend citations to identify modality"),
+    read from the cited chunk's `RetrievalResult.metadata` — populated the
+    same way `document_id`/`page`/`section` are, only for a valid citation.
     """
 
     chunk_id: str
@@ -51,6 +56,9 @@ class Citation:
     filename: str | None = None
     page: int | None = None
     section: str | None = None
+    chunk_type: str | None = None
+    audio_start: float | None = None
+    audio_end: float | None = None
 
     @property
     def valid(self) -> bool:

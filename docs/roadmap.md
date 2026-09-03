@@ -11,7 +11,7 @@ in the repository's development instructions).
 | 2 | Baseline retrieval | ✅ Complete |
 | 3 | Grounded generation + explainability | ✅ Complete |
 | 4 | ~~Explainability~~ (merged into Phase 3) | — |
-| 5 | Multimodal retrieval | Not started |
+| 5 | Multimodal retrieval | ✅ Complete |
 | 6 | Study engine | Not started |
 | 7 | Improved retrieval | Not started |
 | 8 | ~~Evidence sufficiency + abstention~~ (merged into Phase 3) | — |
@@ -85,3 +85,26 @@ chat frontend are implemented in Phase 3 — those remain later phases. Phase
 1 ingestion and Phase 2 retrieval are unchanged by Phase 3 (including the
 documented BGE chunking/truncation issue, left as-is per that issue's own
 disposition).
+
+Phase 5 scope (implemented as "Phase 4" against the implementation brief
+this work was built from — see
+[docs/architecture/multimodal.md](architecture/multimodal.md)'s numbering
+note): VLM-based image/diagram description (`OllamaVisionProvider`,
+optional/config-driven) and OCR (`TesseractOCRProvider`, optional), with
+original visual evidence always preserved separately from derived
+descriptions; table-aware structured representation helpers on top of
+Phase 1's existing table extraction; documented (not fabricated) equation
+representation limitations; audio ingestion with Whisper transcription
+(`WhisperTranscriptionProvider`, optional) and timestamp-aware transcript
+chunking (`BlockType.TRANSCRIPT`); a new `artifacts` provenance table
+(additive DB migration, no data loss); integration of all of the above
+into the existing Phase 2 BM25/FAISS indexing (no second retrieval
+system, no new retrieval mode); multimodal evidence/citation fields
+propagated through the unchanged Phase 3 `GenerationService` into
+`POST /chat/query`; `GET /documents/{id}/artifacts` and
+`GET /chunks/{id}`; multimodal evaluation metrics and a small mocked-
+provider dev dataset. No quizzes, flashcards, study-plan generation,
+advanced tutoring, new chat UI, authentication, deployment, or direct
+visual (CLIP-style) embeddings are implemented in Phase 5 — see
+docs/architecture/multimodal.md "Visual Embeddings" and "Known
+Limitations".
