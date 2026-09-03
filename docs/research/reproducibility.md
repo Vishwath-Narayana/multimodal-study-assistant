@@ -107,6 +107,20 @@ All of the above are read from `Settings`, overridable via `.env` — see
 `.env.example` and
 [docs/architecture/multimodal.md](../architecture/multimodal.md).
 
+## Study Engine Configuration (Phase 5, implemented)
+
+| Parameter | Value | Source |
+|---|---|---|
+| LLM provider/model | reuses `LLM_PROVIDER`/`LLM_MODEL` (Phase 3) | **Implementation choice** — no separate study-engine provider concept |
+| Generation params | `max_tokens=1024` (`STUDY_MAX_TOKENS`), `temperature=0.2` (`STUDY_TEMPERATURE`), timeout 120s (`STUDY_TIMEOUT_SECONDS`) | **Implementation choice** — larger `max_tokens` than chat's 512 since quiz/mcq/flashcards JSON can hold several items |
+| Requested item count bounds | `[1, 20]` (`STUDY_MIN_COUNT`/`STUDY_MAX_COUNT`) | **Implementation choice**, not EduRAG-specified |
+| Sufficiency / citation validation / contradiction checking | reuses Phase 3's `SUFFICIENCY_*`/`CONTRADICTION_TOPIC_OVERLAP_THRESHOLD` settings unchanged | No new thresholds introduced for Phase 5 |
+
+Retrieval mode/top_k/study mode/difficulty/requested count/prompt version
+(there is exactly one prompt per mode, versioned implicitly by the git
+commit of `app.study.prompts`) are all request parameters, not fixed
+config — see [docs/API.md](../API.md) for exact request shapes.
+
 ## Known Environment Dependency (Phase 4)
 
 No VLM (`llava`-family), OCR (`tesseract` binary), or Whisper model was

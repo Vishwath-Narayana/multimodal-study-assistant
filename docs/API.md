@@ -219,6 +219,83 @@ as `POST /retrieval/search`).
 **Response `503`** — the LLM provider is unreachable, or a Phase 2
 dependency (HyDE, embedding/reranker model) failed to load.
 
+### `POST /study/summary`, `/study/explain`, `/study/compare`, `/study/quiz`, `/study/mcq`, `/study/flashcards`
+
+Study Engine (Phase 5) — see
+[docs/architecture/study-engine.md](architecture/study-engine.md) for the
+full pipeline. Six endpoints (not one unified `/study/generate`) because
+each mode's request shape genuinely differs. Every mode reuses Phase 2
+retrieval and Phase 3 sufficiency/citation/contradiction checking; none of
+them implement their own retrieval or grounding.
+
+All six accept `retrieval_mode` (same six values as `/retrieval/search`),
+`top_k`, and an optional `document_id` to scope evidence to one
+already-ingested document (`/study/compare` scopes both topics' retrieval
+to the same document). `/study/quiz`, `/study/mcq`, `/study/flashcards`
+additionally accept `count` (bounded by `study_min_count`/`study_max_count`)
+and `difficulty` (`easy`/`medium`/`hard`); `/study/quiz` also accepts
+`question_type` (`factual_recall`/`conceptual`/`application`/`comparison`);
+`/study/summary` accepts `length` (`concise`/`standard`/`detailed`);
+`/study/explain` accepts `style` (`simple`/`standard`/`detailed`).
+
+**Request** (`/study/mcq`)
+```json
+{ "query": "CPU pipelining", "count": 5, "difficulty": "medium", "retrieval_mode": "full_baseline", "top_k": 8 }
+```
+
+**Response `200`** (`/study/mcq`)
+```json
+{
+  "request_id": "…",
+  "mode": "mcq",
+  "query": "CPU pipelining",
+  "answerable": true,
+  "reason": null,
+  "items": [
+    {
+      "question": "What is pipeline hazard?",
+      "options": [
+        { "id": "A", "text": "…" }, { "id": "B", "text": "…" },
+        { "id": "C", "text": "…" }, { "id": "D", "text": "…" }
+      ],
+      "correct_option": "B",
+      "explanation": "…",
+      "difficulty": "medium",
+      "citations": [ { "chunk_id": "c1", "valid": true, "status": "valid", "document_id": "…", "filename": "notes.pdf" } ],
+      "source_chunk_ids": ["c1"]
+    }
+  ],
+  "evidence": [ { "chunk_id": "c1", "document_id": "…", "filename": "notes.pdf", "rank": 1, "retrieval_source": "reranker", "content_preview": "…" } ],
+  "sufficiency": { "sufficient": true, "reason": "Evidence passed sufficiency checks." },
+  "contradictions": { "has_conflict": false, "conflicts": [] },
+  "trace": {
+    "provider": "ollama", "model": "deepseek-r1:8b",
+    "stats": { "requested_count": 5, "generated_count": 5, "validated_count": 4, "rejected_count": 1, "duplicate_count": 0 },
+    "timing": { "retrieval_ms": 12.0, "sufficiency_ms": 0.1, "generation_ms": 900.0, "parsing_ms": 0.2, "validation_ms": 0.3, "total_ms": 913.0 }
+  }
+}
+```
+`/study/summary`, `/study/explain`, `/study/compare` return a single
+`item` object (`null` when `answerable` is `false`) instead of an `items`
+array — a summary/explanation/comparison is one item, not a list.
+
+When `answerable` is `false` (insufficient evidence for every mode, or —
+for quiz/mcq/flashcards only — every generated item failed validation),
+`items`/`item` is empty/`null` and `reason` explains why. The LLM is never
+called for a sufficiency-driven abstention (same discipline as
+`/chat/query`); for quiz/mcq/flashcards, the LLM *is* called but its output
+is discarded if nothing survives validation — never silently substituted
+with fabricated content.
+
+**Response `400`** — empty query/topic, invalid `retrieval_mode`, invalid
+`length`/`style`/`difficulty`/`question_type` enum value, or `count`
+outside `[study_min_count, study_max_count]`.
+**Response `502`** — the LLM provider was reachable but generation failed,
+or its output could not be parsed into the requested structured shape
+(quiz/mcq/flashcards/compare).
+**Response `503`** — the LLM provider is unreachable, or a Phase 2
+dependency failed to load.
+
 ## Planned
 
 ### Documents
@@ -233,18 +310,7 @@ dependency (HyDE, embedding/reranker model) failed to load.
 
 - `GET /evidence/{answer_id}` — retrieve a *persisted* answer's evidence/citations/scores by id (Phase 3's `/chat/query` already returns all of this inline per-request; this endpoint would require persisting past answers, which Phase 3 does not do).
 
-### Study Engine
-
-- `POST /study/summary`
-- `POST /study/quiz`
-- `POST /study/mcq`
-- `POST /study/flashcards`
-- `POST /study/compare`
-
-Each accepts a document/chunk scope and returns generated study items with
-`source_chunk_ids` for traceability (see [docs/architecture/database.md](architecture/database.md)).
-
-## Conventions (for when these are implemented)
+## Conventions
 
 - All request/response bodies are JSON; request models live in `app/schemas/`.
 - Errors follow FastAPI's default `{"detail": ...}` shape unless a richer
