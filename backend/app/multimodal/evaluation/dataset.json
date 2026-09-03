@@ -1,0 +1,87 @@
+{
+  "description": "Phase 4 multimodal dev dataset: a small, deterministic fixture built directly against backend/tests/fixtures/study_notes.docx (real Docling parsing/chunking) plus a synthetic silent WAV (audio pipeline plumbing only). Image and transcript chunk_ids/content were produced with MOCKED VLM/OCR/transcription providers (backend/scripts/build_multimodal_eval_dataset.py) — no real LLaVA/tesseract/Whisper model is available in this environment, matching the Phase 2 HyDE-mocked precedent (see docs/research/reproducibility.md). This proves the ingestion->chunk->retrieval pipeline is wired correctly end to end for every modality; it is not a measurement of real VLM/OCR/Whisper quality. Regenerate with backend/scripts/build_multimodal_eval_dataset.py if the fixture changes.",
+  "documents": {
+    "study_notes.docx": "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+    "mock_lecture.wav": "2976da01e205a110c9fa41d47659e238a5c6d3c3f3137582f2949853faa201dd"
+  },
+  "queries": [
+    {
+      "query_id": "mm1",
+      "query": "What does photosynthesis convert light energy into?",
+      "category": "text-only",
+      "relevant_chunk_ids": [
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003"
+      ],
+      "relevant_document_ids": ["2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"]
+    },
+    {
+      "query_id": "mm2",
+      "query": "Which organelle is responsible for ATP production?",
+      "category": "table",
+      "relevant_chunk_ids": [
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004"
+      ],
+      "relevant_document_ids": ["2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"]
+    },
+    {
+      "query_id": "mm3",
+      "query": "What does the plant cell diagram show?",
+      "category": "image",
+      "relevant_chunk_ids": [
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00008"
+      ],
+      "relevant_document_ids": ["2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"],
+      "note": "VLM/OCR description is mocked — see dataset description."
+    },
+    {
+      "query_id": "mm4",
+      "query": "What is equation representation coverage like in this dataset?",
+      "category": "equation",
+      "relevant_chunk_ids": [],
+      "note": "Not populated: Docling formula enrichment is disabled (Phase 1 decision, unchanged in Phase 4 — see docs/architecture/ingestion.md), so no fixture produces a real EQUATION chunk to reference. Documented as a limitation rather than fabricated."
+    },
+    {
+      "query_id": "mm5",
+      "query": "What did the lecture say about cell biology?",
+      "category": "transcript",
+      "relevant_chunk_ids": [
+        "2976da01e205a110c9fa41d47659e238a5c6d3c3f3137582f2949853faa201dd::chunk::00000"
+      ],
+      "relevant_document_ids": ["2976da01e205a110c9fa41d47659e238a5c6d3c3f3137582f2949853faa201dd"],
+      "note": "Transcription is mocked — see dataset description."
+    },
+    {
+      "query_id": "mm6",
+      "query": "Explain cellular respiration and what the plant cell diagram shows.",
+      "category": "mixed_text_image",
+      "relevant_chunk_ids": [
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00008"
+      ],
+      "relevant_document_ids": ["2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"]
+    },
+    {
+      "query_id": "mm7",
+      "query": "According to the text and the table, what converts light energy and which organelle produces ATP?",
+      "category": "mixed_text_table",
+      "relevant_chunk_ids": [
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004"
+      ],
+      "relevant_document_ids": ["2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"]
+    },
+    {
+      "query_id": "mm8",
+      "query": "Compare what the notes say about photosynthesis with what the lecture covers.",
+      "category": "mixed_document_audio",
+      "relevant_chunk_ids": [
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+        "2976da01e205a110c9fa41d47659e238a5c6d3c3f3137582f2949853faa201dd::chunk::00000"
+      ],
+      "relevant_document_ids": [
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "2976da01e205a110c9fa41d47659e238a5c6d3c3f3137582f2949853faa201dd"
+      ]
+    }
+  ]
+}
