@@ -75,3 +75,32 @@ def test_reuploading_same_bytes_is_reported_as_duplicate(
     assert first.json()["duplicate"] is False
     assert second.json()["duplicate"] is True
     assert second.json()["document_id"] == first.json()["document_id"]
+
+
+def test_delete_document_removes_it_and_its_chunks(
+    api_client: TestClient, fixtures_dir: Path
+) -> None:
+    upload_response = _upload(api_client, fixtures_dir, "study_notes.pdf", "application/pdf")
+    document_id = upload_response.json()["document_id"]
+
+    delete_response = api_client.delete(f"/documents/{document_id}")
+    assert delete_response.status_code == 204
+
+    assert api_client.get(f"/documents/{document_id}").status_code == 404
+    assert api_client.get(f"/documents/{document_id}/artifacts").status_code == 404
+
+
+def test_delete_unknown_document_returns_404(api_client: TestClient) -> None:
+    response = api_client.delete("/documents/does-not-exist")
+    assert response.status_code == 404
+
+
+def test_reuploading_after_delete_is_not_a_duplicate(
+    api_client: TestClient, fixtures_dir: Path
+) -> None:
+    first = _upload(api_client, fixtures_dir, "study_notes.pptx", "application/vnd.ms-powerpoint")
+    document_id = first.json()["document_id"]
+    api_client.delete(f"/documents/{document_id}")
+
+    second = _upload(api_client, fixtures_dir, "study_notes.pptx", "application/vnd.ms-powerpoint")
+    assert second.json()["duplicate"] is False

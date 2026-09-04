@@ -19,14 +19,15 @@ import sqlite3
 from collections.abc import Generator
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 
 from app.core.config import Settings, get_settings
 from app.ingestion.chunking import ChunkingConfig
-from app.ingestion.errors import ValidationError
+from app.ingestion.errors import StorageError, ValidationError
 from app.ingestion.parsers.docling_parser import DoclingParser
 from app.ingestion.repository import ChunkRepository, DocumentRepository, get_connection, init_db
 from app.ingestion.service import IngestionService
-from app.ingestion.storage import DataPaths, FileImageStorage
+from app.ingestion.storage import DataPaths, FileImageStorage, delete_document_files
 from app.multimodal.audio_service import AudioIngestionResult, AudioIngestionService
 from app.multimodal.errors import AudioValidationError
 from app.multimodal.image_processing import ImageEnrichmentService
@@ -46,6 +47,7 @@ from app.schemas.documents import (
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 chunks_router = APIRouter(prefix="/chunks", tags=["chunks"])
+artifacts_router = APIRouter(prefix="/artifacts", tags=["artifacts"])
 
 
 def _get_connection(
@@ -211,6 +213,25 @@ def get_document(
     return DocumentResponse(**vars(document))
 
 
+def _get_data_paths(settings: Settings = Depends(get_settings)) -> DataPaths:
+    return DataPaths(settings.data_dir)
+
+
+@router.delete("/{document_id}", status_code=204)
+def delete_document(
+    document_id: str,
+    conn: sqlite3.Connection = Depends(_get_connection),
+    data_paths: DataPaths = Depends(_get_data_paths),
+) -> None:
+    """Delete a document, its chunks/artifacts/study items, and its stored
+    files (spec section 5: document library needs a delete action; no such
+    endpoint existed before Phase 6 — see docs/API.md "Planned")."""
+    deleted = DocumentRepository(conn).delete(document_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Document not found.")
+    delete_document_files(data_paths, document_id)
+
+
 @router.get("/{document_id}/artifacts", response_model=ArtifactListResponse)
 def list_document_artifacts(
     document_id: str,
@@ -270,3 +291,27 @@ def get_chunk(
         audio_start=chunk.audio_start,
         audio_end=chunk.audio_end,
     )
+
+
+@artifacts_router.get("/{artifact_id}/file")
+def get_artifact_file(
+    artifact_id: str,
+    conn: sqlite3.Connection = Depends(_get_connection),
+    data_paths: DataPaths = Depends(_get_data_paths),
+) -> FileResponse:
+    """Serve an artifact's original bytes (Phase 6: the multimodal evidence
+    UI needs to display images/diagrams, which no endpoint exposed before —
+    see docs/API.md "Planned"). `storage_path` is resolved back through
+    `DataPaths.resolve_stored_path`, which rejects any path escaping the
+    data root, the same discipline every other file path on this API
+    follows."""
+    artifact = ArtifactRepository(conn).get_by_id(artifact_id)
+    if artifact is None:
+        raise HTTPException(status_code=404, detail="Artifact not found.")
+    try:
+        path = data_paths.resolve_stored_path(artifact.storage_path)
+    except StorageError as exc:
+        raise HTTPException(status_code=404, detail="Artifact file not found.") from exc
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Artifact file not found.")
+    return FileResponse(path, media_type=artifact.mime_type or "application/octet-stream")

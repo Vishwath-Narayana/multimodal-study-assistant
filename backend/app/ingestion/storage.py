@@ -13,6 +13,7 @@ prevent path traversal — uploaded filenames are untrusted input.
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 from typing import Protocol
 
@@ -67,6 +68,16 @@ class DataPaths:
             self.processed_root, document_id, "images", f"{safe_block_id}.{extension}"
         )
 
+    def processed_dir(self, document_id: str) -> Path:
+        return _resolve_within(self.processed_root, document_id)
+
+    def resolve_stored_path(self, relative_path: str) -> Path:
+        """Resolve a `storage_path` value (as stored on `Artifact`/`Chunk`,
+        already relative to the data root) back to an absolute path,
+        rejecting any attempt to escape the data root — same discipline as
+        every other path helper on this class."""
+        return _resolve_within(self.root, relative_path)
+
 
 def save_upload(paths: DataPaths, document_id: str, filename: str, data: bytes) -> Path:
     """Persist raw uploaded bytes and return the path written."""
@@ -77,6 +88,14 @@ def save_upload(paths: DataPaths, document_id: str, filename: str, data: bytes) 
     except OSError as exc:
         raise StorageError("Failed to write uploaded file to storage.") from exc
     return target
+
+
+def delete_document_files(paths: DataPaths, document_id: str) -> None:
+    """Remove a document's raw upload and derived artifacts from disk.
+    Best-effort: a missing directory (already cleaned up, or a document
+    that only ever had rows without files) is not an error."""
+    for directory in (paths.raw_dir(document_id), paths.processed_dir(document_id)):
+        shutil.rmtree(directory, ignore_errors=True)
 
 
 class ImageStorage(Protocol):
