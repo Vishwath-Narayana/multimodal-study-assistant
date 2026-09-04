@@ -30,7 +30,8 @@ requirement.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import dataclass, field
 
 from app.ingestion.models import BlockType, Chunk, DocumentBlock
 
@@ -60,6 +61,13 @@ def approx_token_count(text: str) -> int:
 class ChunkingConfig:
     target_tokens: int = 512
     overlap_tokens: int = 50
+    # Optional override for the token-counting function used when deciding
+    # where to split a text run (defaults to the whitespace approximation
+    # above). Added for the Phase 7 chunking ablation (see
+    # backend/app/benchmarking/chunking_variants.py), which compares this
+    # baseline against a real BGE-subword-token counter without touching
+    # the default behaviour of any existing caller.
+    token_counter: Callable[[str], int] | None = field(default=None, repr=False, compare=False)
 
 
 def chunk_document(
@@ -154,6 +162,7 @@ def _split_text_run(
     """Pack a run of text-bearing blocks into ~target_tokens chunks with overlap."""
     chunks: list[Chunk] = []
     order = start_order
+    count_tokens = config.token_counter or approx_token_count
 
     current_texts: list[str] = []
     current_tokens = 0
@@ -171,7 +180,7 @@ def _split_text_run(
             page=first_block.page,
             section=first_block.section,
             heading_path=list(first_block.heading_path),
-            token_count=approx_token_count(content),
+            token_count=count_tokens(content),
         )
 
     def overlap_tail(texts: list[str]) -> list[str]:
@@ -182,12 +191,12 @@ def _split_text_run(
         return [" ".join(tail_words)] if tail_words else []
 
     for block in blocks:
-        block_tokens = approx_token_count(block.content)
+        block_tokens = count_tokens(block.content)
         if current_texts and current_tokens + block_tokens > config.target_tokens:
             chunks.append(make_chunk(current_texts))
             order += 1
             current_texts = overlap_tail(current_texts)
-            current_tokens = approx_token_count("\n".join(current_texts))
+            current_tokens = count_tokens("\n".join(current_texts))
 
         current_texts.append(block.content)
         current_tokens += block_tokens
@@ -199,9 +208,7 @@ def _split_text_run(
     return chunks
 
 
-def _structured_chunk(
-    block: DocumentBlock, document_id: str, parent_id: str, order: int
-) -> Chunk:
+def _structured_chunk(block: DocumentBlock, document_id: str, parent_id: str, order: int) -> Chunk:
     return Chunk(
         id=f"{document_id}::chunk::{order:05d}",
         document_id=document_id,

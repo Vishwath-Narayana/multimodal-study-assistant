@@ -46,6 +46,9 @@ dependencies = [
     # weights are downloaded from Hugging Face on first real transcription
     # call, not at install time.
     "faster-whisper>=1.2.1",
+    "pyyaml>=6.0.3",
+    "matplotlib>=3.11.1",
+    "scipy>=1.18.1",
 ]
 
 [dependency-groups]
@@ -67,6 +70,10 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.lint.per-file-ignores]
 # FastAPI's dependency-injection idiom is Depends(...) as a default value.
 "app/api/*.py" = ["B008"]
+# One-off Phase 7 dataset-generation script: long human-readable gold
+# answers/notes as string literals are clearer unwrapped than manually
+# split across lines.
+"scripts/build_phase7_pilot_dataset.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"
