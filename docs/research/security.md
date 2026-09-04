@@ -11,9 +11,9 @@ uploads (magic-byte sniffing on top of the existing extension/size checks)
 — see [docs/architecture/multimodal.md](../architecture/multimodal.md)
 "Security". OCR text and VLM descriptions are treated as data through the
 same existing evidence-is-data prompt framing; no new prompt path was
-added for them. Phases 6+ (study engine, frontend, deployment) still have
-no built security framework beyond what this document already
-establishes.
+added for them. **Phase 8** is the dedicated hardening phase — see
+"Phase 8 Additions" below and `docs/security/` for the full audit, threat
+model, test matrix, configuration reference, and final report.
 
 ## Core Principle
 
@@ -110,6 +110,46 @@ claims (e.g. a document containing "ignore previous instructions and ...").
   guesses at malformed content; a parse failure raises
   `MalformedStudyOutputError` (mapped to `502`), never a silently
   substituted or partially-fabricated study item.
+
+## Phase 8 Additions
+
+Phase 8 is the dedicated hardening phase; the full audit, threat model,
+test matrix, configuration reference, and final report live under
+`docs/security/` rather than in this file. Summary of what changed:
+
+- **Marker-injection neutralization** — *implemented*:
+  `app.generation.prompt_security.neutralize_prompt_markers` breaks any
+  literal occurrence of a reserved prompt section-boundary marker (e.g.
+  `=== STUDENT QUESTION ===`) inside a chunk's content before it enters
+  either prompt renderer's evidence block — a document can no longer forge
+  a false section boundary inside the untrusted evidence text. Applied in
+  both `app.generation.prompts` and `app.study.prompts`.
+- **Log-only prompt-injection detection** — *implemented*:
+  `app.generation.injection_detection` scans retrieved evidence for a
+  small set of injection-shaped multi-word phrases and logs a
+  `security.prompt_injection_signal` warning; it never blocks or alters a
+  request (spec section 8D.3: detection is not a complete defense).
+- **Magic-byte upload validation for documents** — *implemented*:
+  `app.ingestion.validation` now checks PDF/DOCX/PPTX signatures, mirroring
+  the audio magic-byte check that already existed from Phase 4.
+- **New resource ceilings** — *implemented*: query length, `top_k`,
+  document page count, extracted character count, chunk count, and
+  per-document OCR/VLM artifact count are all now bounded and centralized
+  in `Settings` — see `docs/security/SECURITY_CONFIGURATION.md`.
+- **Temporary file cleanup on failure** — *implemented*: both document and
+  audio ingestion now delete a failed upload's raw file, closing a
+  disk-accumulation gap.
+- **API error handling** — *implemented*: global exception handlers ensure
+  a domain error raised from a FastAPI dependency (not just from inside an
+  endpoint) still maps to its correct status code, and any fully
+  unexpected exception always returns a generic, safe message with the
+  real detail logged server-side only.
+- **Security response headers** — *implemented*: `X-Content-Type-Options`,
+  `X-Frame-Options`, `Referrer-Policy` on every response.
+
+See `docs/security/PHASE_8_SECURITY_REPORT.md` for the complete report,
+including residual risks and limitations — Phase 8 does **not** claim
+prompt injection or document poisoning are eliminated.
 
 ## Explicit Non-Goals for Now
 

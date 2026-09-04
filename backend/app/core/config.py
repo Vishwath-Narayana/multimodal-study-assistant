@@ -211,6 +211,42 @@ class Settings(BaseSettings):
     # Implementation choice: HTTP timeout for the local Ollama call.
     hyde_timeout_seconds: float = 30.0
 
+    # --- Security / resource limits (Phase 8) ---
+    # Centralized here rather than scattered through the codebase (spec
+    # section 8T) — every numeric limit below is an implementation choice
+    # for this local-first, single-user deployment, not a value mandated by
+    # EduRAG. See docs/security/SECURITY_CONFIGURATION.md for rationale.
+
+    # Guards `app.retrieval.service.RetrievalService.retrieve` (shared by
+    # /chat/query, /retrieval/search, and every /study/* endpoint) against
+    # pathologically long query strings (spec section 8G). 4000 characters
+    # is generous for any legitimate student question while still bounding
+    # embedding/tokenization cost per request.
+    security_max_query_length: int = 4000
+
+    # Same choke point: bounds the `top_k` a caller can request, so a
+    # request cannot force reranking/attribution over an unbounded
+    # candidate pool. 100 is far above the `final_top_k` default (5) but
+    # still bounded.
+    security_max_top_k: int = 100
+
+    # Ingestion resource ceilings (spec section 8B.2/8C), enforced in
+    # `app.ingestion.service.IngestionService` *after* parsing (Docling
+    # does not expose page/size information before it has already parsed
+    # the document) — these cap how much of a parsed document is persisted
+    # and indexed, not how much is read into memory while parsing.
+    security_max_document_pages: int = 1000
+    security_max_extracted_chars: int = 10_000_000
+    security_max_chunks_per_document: int = 10_000
+
+    # Caps how many images from a single document are sent through
+    # OCR/VLM enrichment (spec section 8J: "excessive document
+    # processing") — a document with thousands of tiny embedded images
+    # would otherwise trigger thousands of OCR/VLM calls. Images beyond
+    # this count keep their original `image_path` (spec section 7: never
+    # drop the original artifact) but are not enriched.
+    security_max_artifacts_per_document: int = 200
+
     @property
     def sqlite_path(self) -> str:
         """The filesystem path backing ``database_url`` (sqlite:/// only)."""
