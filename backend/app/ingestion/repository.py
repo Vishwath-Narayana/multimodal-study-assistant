@@ -160,6 +160,25 @@ class DocumentRepository:
         assert result is not None
         return result
 
+    def delete(self, document_id: str) -> bool:
+        """Delete a document and its dependent rows (chunks, artifacts,
+        study items). Returns False if the document didn't exist. Foreign
+        keys aren't declared ON DELETE CASCADE (see schema.sql), so
+        dependents are removed explicitly, in dependency order, inside one
+        transaction."""
+        if self.get_by_id(document_id) is None:
+            return False
+        self._conn.execute(
+            "DELETE FROM artifacts WHERE document_id = ?", (document_id,)
+        )
+        self._conn.execute(
+            "DELETE FROM study_items WHERE document_id = ?", (document_id,)
+        )
+        self._conn.execute("DELETE FROM chunks WHERE document_id = ?", (document_id,))
+        self._conn.execute("DELETE FROM documents WHERE id = ?", (document_id,))
+        self._conn.commit()
+        return True
+
 
 class ChunkRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:

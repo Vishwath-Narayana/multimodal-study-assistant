@@ -91,3 +91,23 @@ def test_get_chunk_by_id_returns_multimodal_fields(
 def test_get_chunk_by_id_unknown_returns_404(api_client: TestClient) -> None:
     response = api_client.get("/chunks/does-not-exist")
     assert response.status_code == 404
+
+
+def test_get_artifact_file_returns_bytes(
+    client_with_transcription: TestClient, wav_bytes: bytes
+) -> None:
+    upload = client_with_transcription.post(
+        "/documents/upload", files={"file": ("lecture.wav", wav_bytes, "audio/wav")}
+    )
+    document_id = upload.json()["document_id"]
+    artifacts = client_with_transcription.get(f"/documents/{document_id}/artifacts").json()
+    artifact_id = artifacts["artifacts"][0]["id"]
+
+    response = client_with_transcription.get(f"/artifacts/{artifact_id}/file")
+    assert response.status_code == 200
+    assert len(response.content) > 0
+
+
+def test_get_artifact_file_unknown_returns_404(api_client: TestClient) -> None:
+    response = api_client.get("/artifacts/does-not-exist/file")
+    assert response.status_code == 404
