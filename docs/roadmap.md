@@ -16,7 +16,7 @@ in the repository's development instructions).
 | 7 | Improved retrieval | Not started |
 | 8 | ~~Evidence sufficiency + abstention~~ (merged into Phase 3) | — |
 | 9 | ~~Contradiction detection~~ (merged into Phase 3) | — |
-| 10 | Frontend integration | Not started |
+| 10 | Frontend integration | ✅ Complete |
 | 11 | Evaluation + ablation | Not started |
 | 12 | Security + hardening | Not started |
 | 13 | Final experiments | Not started |
@@ -126,3 +126,26 @@ study evaluation metric/dataset interfaces. No polished frontend/study UI,
 authentication, deployment, learner analytics, spaced repetition,
 gamification, or autonomous tutoring agents are implemented in Phase
 6 — see docs/architecture/study-engine.md "Known Limitations".
+
+Phase 10 scope (implemented as "Phase 6 — Application/UI" against the
+implementation brief this work was built from — see
+[docs/architecture/frontend.md](architecture/frontend.md)): a complete
+React/TypeScript/Vite/Tailwind student-facing application on top of the
+unchanged Phase 1-5 backend — Dashboard, Document Library (upload/list/
+delete), a per-document view with quick actions, a global RAG Chat, and a
+unified Study workspace (Summary/Explain/Compare/Quiz/MCQ/Flashcards); a
+central typed API client (`frontend/src/lib/api/`); an evidence/citation
+UI exposing modality (text/image/diagram/table/transcript), page/section/
+timestamp, and validation status for every answer, with an explicit
+"Insufficient evidence" state when abstained; loading/error/empty states
+throughout; responsive (mobile/tablet/desktop) layout; keyboard/focus-
+visible accessibility. Two minimal, additive backend endpoints were added
+because the UI could not function without them (`DELETE /documents/{id}`
+for the document library's delete action, `GET /artifacts/{id}/file` to
+display multimodal evidence images) — see docs/API.md. `feature/
+study-engine` was also merged into `develop` during this phase: it had
+been fully implemented but never merged, which the frontend needed. No
+retrieval/generation/grounding/citation/study-engine algorithm was
+modified. No authentication, deployment, learner analytics, spaced
+repetition, or gamification are implemented in Phase 10 — see
+docs/architecture/frontend.md "Known Limitations".

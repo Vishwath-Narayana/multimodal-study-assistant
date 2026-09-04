@@ -1,11 +1,11 @@
 # API Design
 
 Status: `GET /health` (Phase 0), the `/documents` endpoints (Phase 1),
-`POST /retrieval/search` (Phase 2), `POST /chat/query` (Phase 3), and
-`GET /documents/{id}/artifacts` + `GET /chunks/{id}` (Phase 4) are
-implemented. Everything else below is the planned API surface for later
-phases — documented ahead of implementation so the study-engine work has
-a stable contract to build against, per [docs/roadmap.md](roadmap.md).
+`POST /retrieval/search` (Phase 2), `POST /chat/query` (Phase 3),
+`GET /documents/{id}/artifacts` + `GET /chunks/{id}` (Phase 4), the six
+`POST /study/*` endpoints (Phase 5), and `DELETE /documents/{id}` +
+`GET /artifacts/{id}/file` (Phase 6, added for the application UI) are
+implemented. Everything under "Planned" below remains unimplemented.
 
 ## Implemented
 
@@ -76,6 +76,32 @@ Returns one document's stored metadata and status.
 
 **Response `200`** — the same shape as one entry in `GET /documents`.
 **Response `404`** — unknown document id.
+
+### `DELETE /documents/{document_id}` (Phase 6)
+
+Deletes a document and its dependent rows (`chunks`, `artifacts`,
+`study_items`) plus its files under `data/raw` and `data/processed`.
+Added for Phase 6's document library UI (spec section 5, "delete
+document") — no such endpoint existed before. Foreign keys aren't declared
+`ON DELETE CASCADE` (see `docs/architecture/database.md`), so dependents
+are removed explicitly inside one transaction before the document row.
+File cleanup is best-effort (a missing directory is not an error).
+
+**Response `204`** — no body.
+**Response `404`** — unknown document id.
+
+### `GET /artifacts/{artifact_id}/file` (Phase 6)
+
+Serves an artifact's original bytes (Phase 6's multimodal evidence UI needs
+to display images/diagrams, which no endpoint exposed before). The stored
+`storage_path` is resolved back to an absolute path through
+`DataPaths.resolve_stored_path`, which rejects any path escaping the
+configured data root — same discipline as every other file path on this
+API.
+
+**Response `200`** — the artifact's raw bytes, `Content-Type` set from the
+stored `mime_type` (or `application/octet-stream` if unset).
+**Response `404`** — unknown artifact id, or the file is missing on disk.
 
 ### `GET /documents/{document_id}/artifacts` (Phase 4)
 
@@ -297,10 +323,6 @@ or its output could not be parsed into the requested structured shape
 dependency failed to load.
 
 ## Planned
-
-### Documents
-
-- `DELETE /documents/{id}` — remove a document and its derived chunks/embeddings.
 
 ### Chat
 
