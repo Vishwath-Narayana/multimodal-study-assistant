@@ -11,10 +11,18 @@ modes unless the caller explicitly chose a HyDE-enabled mode.
 from __future__ import annotations
 
 import time
+import unicodedata
 import uuid
 from dataclasses import dataclass
 
-from app.retrieval.errors import EmptyQueryError, HyDEUnavailableError, InvalidModeError
+from app.retrieval.errors import (
+    EmptyQueryError,
+    HyDEUnavailableError,
+    InvalidModeError,
+    InvalidQueryError,
+    InvalidTopKError,
+    QueryTooLongError,
+)
 from app.retrieval.interfaces import (
     FusedCandidate,
     FusionStrategy,
@@ -41,6 +49,12 @@ class RetrievalServiceConfig:
     rrf_candidate_k: int
     rerank_candidate_k: int
     final_top_k: int
+    # Phase 8 resource limits (spec section 8G/8T). Defaulted so every
+    # pre-existing construction site (benchmarking, experiment scripts,
+    # tests) keeps working unchanged; only `app.api.retrieval` wires these
+    # from `Settings.security_max_query_length`/`security_max_top_k`.
+    max_query_length: int = 4000
+    max_top_k: int = 100
 
 
 def _candidate_to_result(candidate: RetrievalCandidate, source: RetrievalSource) -> RetrievalResult:
@@ -110,6 +124,19 @@ def _ms_since(start: float) -> float:
     return (time.perf_counter() - start) * 1000.0
 
 
+_ALLOWED_CONTROL_CHARS = frozenset({"\t", "\n", "\r"})
+
+
+def _contains_disallowed_control_chars(text: str) -> bool:
+    """True if `text` contains a Unicode control character (category "Cc")
+    other than tab/newline/carriage-return. A legitimate question never
+    needs these; allowing them through risks log/terminal injection
+    downstream (spec section 8G/8Q) since queries are logged verbatim."""
+    return any(
+        unicodedata.category(ch) == "Cc" and ch not in _ALLOWED_CONTROL_CHARS for ch in text
+    )
+
+
 class RetrievalService:
     def __init__(
         self,
@@ -137,11 +164,24 @@ class RetrievalService:
         if not query or not query.strip():
             raise EmptyQueryError("Query must not be empty.")
 
+        if len(query) > self._config.max_query_length:
+            raise QueryTooLongError(
+                f"Query exceeds the {self._config.max_query_length}-character limit."
+            )
+
+        if _contains_disallowed_control_chars(query):
+            raise InvalidQueryError("Query contains unsupported control characters.")
+
         if isinstance(mode, str):
             try:
                 mode = RetrievalMode(mode)
             except ValueError as exc:
                 raise InvalidModeError(f"Unrecognized retrieval mode: {mode!r}") from exc
+
+        if top_k is not None and not (1 <= top_k <= self._config.max_top_k):
+            raise InvalidTopKError(
+                f"top_k must be between 1 and {self._config.max_top_k}."
+            )
 
         request_id = request_id or uuid.uuid4().hex
         resolved_top_k = top_k if top_k is not None else self._config.final_top_k

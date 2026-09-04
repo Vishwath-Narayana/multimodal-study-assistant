@@ -26,7 +26,10 @@ from app.retrieval.errors import (
     EmptyQueryError,
     HyDEUnavailableError,
     InvalidModeError,
+    InvalidQueryError,
+    InvalidTopKError,
     NoIndexedChunksError,
+    QueryTooLongError,
     RerankerModelError,
     RetrievalError,
 )
@@ -166,12 +169,17 @@ def get_retrieval_service(
         rrf_candidate_k=settings.rrf_candidate_k,
         rerank_candidate_k=settings.rerank_candidate_k,
         final_top_k=settings.final_top_k,
+        max_query_length=settings.security_max_query_length,
+        max_top_k=settings.security_max_top_k,
     )
     return RetrievalService(bm25, dense, hyde, RRFFusion(k=settings.rrf_k), reranker, config)
 
 
 _ERROR_STATUS: dict[type[RetrievalError], int] = {
     EmptyQueryError: 400,
+    QueryTooLongError: 400,
+    InvalidQueryError: 400,
+    InvalidTopKError: 400,
     InvalidModeError: 400,
     NoIndexedChunksError: 409,
     HyDEUnavailableError: 503,

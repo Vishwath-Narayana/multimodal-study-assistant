@@ -20,6 +20,21 @@ class EmptyQueryError(RetrievalError):
     """The query string was empty/whitespace-only."""
 
 
+class QueryTooLongError(RetrievalError):
+    """The query string exceeded the configured maximum length (spec
+    section 8G: reject pathologically long input, without restricting
+    legitimate academic questions)."""
+
+
+class InvalidQueryError(RetrievalError):
+    """The query contains control characters that have no legitimate use
+    in a question and could otherwise reach logs/prompts unescaped."""
+
+
+class InvalidTopKError(RetrievalError):
+    """The requested `top_k` was outside the allowed range."""
+
+
 class InvalidModeError(RetrievalError):
     """An unrecognized retrieval mode was requested."""
 
