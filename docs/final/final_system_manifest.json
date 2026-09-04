@@ -1,0 +1,111 @@
+{
+  "project": "AI-Powered Multimodal Study Assistant Using RAG and LLMs",
+  "phase": "Phase 9 - Final Validation, Report, Demo & Viva",
+  "manifest_generated": "2026-09-04",
+  "git": {
+    "branch": "feature/final-report-demo",
+    "base_branch": "develop",
+    "base_commit": "5c58f41ddcb30b67eaab5c0fabce26214aa8cf8a",
+    "base_commit_note": "Merge commit for PR #9 (feature/security-hardening), Phase 8 complete"
+  },
+  "environment": {
+    "python_version_backend_venv": "3.12.13",
+    "python_version_system": "3.9.6",
+    "node_version": "v26.5.0",
+    "platform": "macOS (Darwin, arm64)"
+  },
+  "backend_tests": {
+    "total": 509,
+    "passed": 505,
+    "deselected": 4,
+    "security_tests": 70,
+    "command": "uv run pytest -q"
+  },
+  "frontend_tests": {
+    "total": 13,
+    "passed": 13,
+    "test_files": 6,
+    "command": "vitest run"
+  },
+  "lint_and_type_checks": {
+    "backend_ruff": "pass",
+    "backend_mypy": "pass (117 source files, 0 issues)",
+    "frontend_oxlint": "pass",
+    "frontend_tsc_build": "pass"
+  },
+  "supported_document_formats": ["PDF", "DOCX", "PPTX", "HTML", "image", "audio"],
+  "retrieval_modes": [
+    "bm25",
+    "dense",
+    "dense_hyde",
+    "hybrid_rrf",
+    "hybrid_rrf_hyde",
+    "full_baseline"
+  ],
+  "study_modes": ["summary", "explain", "compare", "quiz", "mcq", "flashcards"],
+  "security_controls": [
+    "magic-byte upload validation",
+    "filename sanitization / path-escape prevention",
+    "content-hash document identity (duplicate detection)",
+    "resource ceilings (query length, top_k, document pages, extracted chars, chunks/artifacts per document)",
+    "temp-file cleanup on every ingestion failure path",
+    "evidence-is-data prompt framing",
+    "prompt-marker neutralization (indirect prompt injection mitigation)",
+    "log-only prompt-injection signal detection",
+    "deterministic backend-controlled citation validation",
+    "parameterized SQL only, no eval/exec/pickle/yaml.load/os.system",
+    "transactional cascade delete",
+    "global exception handlers (no stack-trace leakage)",
+    "security response headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy)"
+  ],
+  "model_availability_this_environment": {
+    "ollama": { "available": false, "detail": "ollama binary not found on PATH" },
+    "tesseract": { "available": false, "detail": "tesseract binary not found on PATH" },
+    "sentence_transformers": { "available": true, "detail": "importable, version 6.0.1" },
+    "faiss": { "available": true, "detail": "importable" },
+    "faster_whisper": { "available": true, "detail": "importable; no live transcription additionally run in Phase 9" }
+  },
+  "configured_models": {
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "llm_provider": "ollama",
+    "llm_model": "deepseek-r1:8b",
+    "hyde_model": "deepseek-r1:1.5b",
+    "vlm_model": "not configured (empty by default)",
+    "whisper_model": "base"
+  },
+  "benchmark_status": {
+    "type": "pilot retrieval benchmark",
+    "dataset": "pilot_v1",
+    "documents": 3,
+    "chunks": 23,
+    "questions": 14,
+    "answerable_questions": 12,
+    "unanswerable_questions": 2,
+    "result_source": "evaluation/results/run_baseline_20260904T032025Z/",
+    "headline_results": {
+      "bm25": { "mrr": 0.6667, "recall_at_5": 0.6111 },
+      "dense": { "mrr": 0.8056, "recall_at_5": 0.7083 },
+      "simple_fusion": { "mrr": 0.7222, "recall_at_5": 0.6111 },
+      "hybrid_rrf": { "mrr": 0.8542, "recall_at_5": 0.6806 },
+      "hybrid_rrf_reranked": { "mrr": 0.7778, "recall_at_5": 0.7639 }
+    },
+    "statistical_significance": "none of the tested differences significant at alpha=0.05, n=12 (Wilcoxon signed-rank)",
+    "generation_evaluation": "NOT MEASURED - Ollama unavailable",
+    "hyde_evaluation": "NOT MEASURED (real model) - pipeline validated only with a mocked HyDE call",
+    "multimodal_live_evaluation": "NOT MEASURED - Tesseract/VLM unavailable"
+  },
+  "known_limitations": [
+    "Small pilot evaluation corpus (3 documents, 23 chunks, 14 questions)",
+    "No large-scale academic benchmark performed",
+    "No statistically significant retrieval result at this sample size",
+    "No live generation benchmark (Ollama unavailable)",
+    "HyDE not measured with a real model",
+    "VLM/OCR/live transcription evaluation gaps (Tesseract, VLM unavailable)",
+    "No direct visual (CLIP-style) embedding retrieval implemented",
+    "Single-user, local-first deployment only",
+    "No authentication or multi-tenant isolation",
+    "Prompt injection and document poisoning risk reduced, not eliminated",
+    "One accepted residual dependency vulnerability: transformers CVE-2026-9856, verified unreachable in this application's code paths"
+  ]
+}

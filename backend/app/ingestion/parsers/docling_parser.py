@@ -31,6 +31,13 @@ Known limitations (documented rather than silently worked around):
   (``docling-project/docling-layout-heron-onnx``) without that crash.
   This only affects the PDF format option; DOCX/PPTX/HTML keep Docling's
   defaults.
+- Table structure recognition (``do_table_structure=True``) is kept
+  enabled, but pinned to ``TableFormerMode.FAST`` instead of Docling's
+  default ``ACCURATE`` mode. On the same Apple Silicon setup described
+  above, initializing the table-structure stage in ``ACCURATE`` mode
+  segfaults during a live upload even though the Heron/ONNXRuntime layout
+  fix is in place; ``FAST`` mode initializes and parses successfully
+  without disabling table extraction.
 """
 
 from __future__ import annotations
@@ -48,6 +55,8 @@ from docling.datamodel.pipeline_options import (
     AcceleratorOptions,
     LayoutObjectDetectionOptions,
     PdfPipelineOptions,
+    TableFormerMode,
+    TableStructureOptions,
 )
 from docling.datamodel.stage_model_specs import (
     EngineModelConfig,
@@ -111,6 +120,8 @@ class DoclingParser:
         pdf_pipeline_options = PdfPipelineOptions(
             accelerator_options=AcceleratorOptions(device=AcceleratorDevice.CPU),
             layout_options=layout_options,
+            do_table_structure=True,
+            table_structure_options=TableStructureOptions(mode=TableFormerMode.FAST),
         )
         return DocumentConverter(
             format_options={
