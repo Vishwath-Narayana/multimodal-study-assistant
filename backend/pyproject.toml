@@ -8,15 +8,56 @@ dependencies = [
     "uvicorn[standard]>=0.32",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
+    "docling>=2.124.0",
+    "python-multipart>=0.0.32",
+    # --- Retrieval (Phase 2) ---
+    # rank-bm25: small, dependency-light, pure-Python BM25Okapi implementation.
+    # Chosen over reimplementing BM25 from scratch (spec requires an
+    # established library) and over pulling in a heavier search engine
+    # (Elasticsearch/Whoosh) that would be overkill for an in-process,
+    # local-first corpus of this size.
+    "rank-bm25>=0.2.2",
+    # sentence-transformers: standard wrapper for BAAI/bge-small-en-v1.5 and
+    # the cross-encoder reranker, both used as-is (no fine-tuning), so the
+    # thinner sentence-transformers API is enough — no need for raw
+    # transformers/torch plumbing.
+    "sentence-transformers>=3.3",
+    # faiss-cpu: exact-search (IndexFlatIP) local vector index. No GPU
+    # requirement in this environment; ADR-002/ADR-003 rule out an external
+    # vector DB service.
+    "faiss-cpu>=1.9",
+    # httpx (promoted from dev-only): the HyDE Ollama client needs a real
+    # HTTP client with timeouts; the stdlib urllib is usable but httpx is
+    # already in the dependency tree as a test dependency and gives us a
+    # nicer, typed API for one small client module.
+    "httpx>=0.27",
+    # --- Multimodal (Phase 4) ---
+    # pytesseract: thin wrapper around the system `tesseract` OCR binary.
+    # The binary itself is an external, not-pip-installable dependency —
+    # OCRProvider.is_available() reports False (never fabricates OCR text)
+    # when it is not on PATH, same optional-provider pattern as VLM/Whisper
+    # below. Chosen over a pure-Python OCR engine (e.g. easyocr, which pulls
+    # in torch) to keep this local-first and CPU-light.
+    "pytesseract>=0.3.13",
+    # faster-whisper: CTranslate2-based Whisper inference, no torch
+    # dependency (unlike openai-whisper), CPU-compatible, and lets model
+    # size/device/compute type be configured (WHISPER_MODEL/WHISPER_DEVICE)
+    # without a GPU requirement — see app/multimodal/transcription.py. Model
+    # weights are downloaded from Hugging Face on first real transcription
+    # call, not at install time.
+    "faster-whisper>=1.2.1",
+    "pyyaml>=6.0.3",
+    "matplotlib>=3.11.1",
+    "scipy>=1.18.1",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8.3",
     "pytest-cov>=5.0",
-    "httpx>=0.27",
     "ruff>=0.7",
     "mypy>=1.13",
+    "reportlab>=5.0.1",
 ]
 
 [tool.ruff]
@@ -26,6 +67,14 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+# FastAPI's dependency-injection idiom is Depends(...) as a default value.
+"app/api/*.py" = ["B008"]
+# One-off Phase 7 dataset-generation script: long human-readable gold
+# answers/notes as string literals are clearer unwrapped than manually
+# split across lines.
+"scripts/build_phase7_pilot_dataset.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.12"
 ignore_missing_imports = true
@@ -33,7 +82,14 @@ disallow_untyped_defs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = "-ra -m \"not integration and not requires_ollama and not requires_model and not requires_tesseract and not requires_whisper\""
+markers = [
+    "integration: exercises a real ML model download/inference (BGE, cross-encoder); not run by default or in CI.",
+    "requires_ollama: needs a locally reachable Ollama server; auto-skipped when Ollama isn't reachable.",
+    "requires_model: needs real model weights (sentence-transformers) downloaded from the internet; not run by default or in CI.",
+    "requires_tesseract: needs the system `tesseract` binary on PATH; auto-skipped when it isn't installed.",
+    "requires_whisper: downloads and runs a real faster-whisper model; not run by default or in CI.",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -41,3 +97,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"app/ingestion/schema.sql" = "app/ingestion/schema.sql"
+"app/retrieval/evaluation/dataset.json" = "app/retrieval/evaluation/dataset.json"
+"app/multimodal/evaluation/dataset.json" = "app/multimodal/evaluation/dataset.json"

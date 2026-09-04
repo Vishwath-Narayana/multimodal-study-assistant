@@ -10,7 +10,14 @@ configs/results for this project.
   see [docs/research/evaluation-plan.md](../docs/research/evaluation-plan.md))
 - `experiments/` — per-run configuration + results
 
-This directory is currently empty (Phase 0). It is populated starting in
-Phase 11 per [docs/roadmap.md](../docs/roadmap.md), once retrieval and
-generation exist to evaluate. No results are ever fabricated or recorded
-here ahead of an actual run.
+Populated starting in Phase 11 ("Phase 7 — Evaluation & Benchmarking" in
+the implementation brief this work was built from — see
+[docs/roadmap.md](../docs/roadmap.md) and
+[docs/evaluation/PHASE_7_EVALUATION_REPORT.md](../docs/evaluation/PHASE_7_EVALUATION_REPORT.md)).
+No results are ever fabricated or recorded here ahead of an actual run —
+`configs/` and `datasets/` are curated inputs; `results/` and `figures/`
+are generated output, committed as evidence for the numbers in the
+report above (see `backend/scripts/run_phase7_benchmark.py`). `datasets/
+pilot_v1.json` is built from the real Phase 1 test fixtures
+(`backend/tests/fixtures/study_notes.*`), which are synthetic example
+course material created for unit testing — never real student documents.

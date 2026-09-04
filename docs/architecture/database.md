@@ -1,8 +1,14 @@
 # Database Design
 
-Status: **design document**. No database or ORM models exist yet in code
-(Phase 0 only ships the FastAPI skeleton). This describes the intended
-schema for later ingestion/retrieval/generation phases.
+Status: **`documents` and `chunks` are implemented** (Phase 1, extended in
+Phase 4), and **`artifacts` is implemented** (Phase 4) — schema defined
+once in `backend/app/ingestion/schema.sql`, loaded by
+`app/ingestion/repository.py::init_db`. Everything below that (embeddings
+onward) is still a design-only plan for later phases. The implemented
+tables extend this Phase 0 design with the columns ingestion actually
+needs (status tracking, extracted metadata, per-chunk structured-content
+and multimodal fields) — differences from the original design are called
+out inline.
 
 ## Principles
 
@@ -16,34 +22,72 @@ schema for later ingestion/retrieval/generation phases.
 
 ## Logical Entities
 
-### documents
+### documents — implemented
 Uploaded source files.
 
 | Column | Type | Notes |
 |---|---|---|
-| id | PK | |
-| filename | text | original filename |
-| file_type | text | pdf / docx / pptx / html / image / audio |
-| file_hash | text | for dedup + provenance |
-| uploaded_at | timestamp | |
-| page_count | int, nullable | |
-| status | text | e.g. pending / parsed / failed |
+| id | TEXT PK | = the file's SHA-256 hash (see ingestion.md §3) |
+| filename | TEXT | original filename |
+| file_type | TEXT | pdf / docx / pptx / html / htm |
+| file_hash | TEXT UNIQUE | SHA-256, for dedup + provenance |
+| uploaded_at | TEXT (ISO 8601) | set once, preserved across re-ingestion |
+| updated_at | TEXT (ISO 8601) | *(added in Phase 1)* bumped on every status change |
+| status | TEXT | `processing` / `completed` / `failed` (see ingestion.md §10) |
+| page_count | INTEGER, nullable | |
+| title | TEXT, nullable | *(added in Phase 1)* extracted document title |
+| author | TEXT, nullable | *(added in Phase 1)* |
+| subject | TEXT, nullable | *(added in Phase 1)* |
+| block_count | INTEGER, nullable | *(added in Phase 1)* |
+| chunk_count | INTEGER, nullable | *(added in Phase 1)* |
+| error_message | TEXT, nullable | *(added in Phase 1)* safe, user-facing failure reason |
 
-### chunks
+### chunks — implemented
 Structure-aware chunks produced by ingestion.
 
 | Column | Type | Notes |
 |---|---|---|
-| id | PK | |
-| document_id | FK → documents | |
-| parent_id | FK → chunks, nullable | for hierarchical parent/child retrieval (extension) |
-| page | int, nullable | |
-| section | text, nullable | |
-| chunk_type | text | text / table / image / equation |
-| content | text | chunk text, or OCR+VLM description for image chunks |
-| image_path | text, nullable | original image reference, kept even when a VLM description exists |
-| audio_start | float, nullable | seconds, for transcript chunks |
-| audio_end | float, nullable | |
+| id | TEXT PK | deterministic, see ingestion.md §6 |
+| document_id | TEXT FK → documents | |
+| parent_id | TEXT, nullable | references a synthetic per-section chunk's id (not a FK constraint, since parent rows share the same table); data representation only — not used for retrieval in Phase 1 |
+| order_index | INTEGER | *(named `order_index`, not `order` — reserved word in SQL)* |
+| chunk_type | TEXT | heading / paragraph / list / table / image / equation / code / caption / unknown |
+| content | TEXT | chunk text, or a plain-text table rendering for table chunks |
+| page | INTEGER, nullable | |
+| section | TEXT, nullable | deepest heading title |
+| heading_path | TEXT, nullable | *(added in Phase 1)* JSON array of ancestor heading titles |
+| token_count | INTEGER | *(added in Phase 1)* whitespace-approximate token count |
+| image_path | TEXT, nullable | path relative to `data/`, kept even before any VLM description exists |
+| table_content | TEXT, nullable | *(added in Phase 1)* JSON `list[list[str]]` grid |
+| equation_content | TEXT, nullable | raw equation text where Docling detects one (see ingestion.md §4 limitations) |
+| ocr_text | TEXT, nullable | *(added in Phase 4)* OCR-extracted text from an image artifact |
+| ocr_status | TEXT, nullable | *(added in Phase 4)* `VisionStatus`: not_attempted / available / unavailable / failed |
+| vlm_description | TEXT, nullable | *(added in Phase 4)* VLM-generated image/diagram description |
+| vision_status | TEXT, nullable | *(added in Phase 4)* same enum, for the VLM description |
+| artifact_id | TEXT, nullable | *(added in Phase 4)* FK to `artifacts.id` |
+| audio_start | REAL, nullable | *(added in Phase 4)* seconds, for `chunk_type = transcript` |
+| audio_end | REAL, nullable | *(added in Phase 4)* seconds, for `chunk_type = transcript` |
+
+The Phase 4 columns were added via an additive `ALTER TABLE` migration
+(`app.ingestion.repository._migrate_phase4_columns`, run on every
+`init_db()` call) rather than a schema rewrite, so an existing Phase 1-3
+database keeps its `documents`/`chunks` data.
+
+### artifacts — implemented (Phase 4)
+Provenance for original image/audio artifacts (see
+[docs/architecture/multimodal.md](multimodal.md) "Provenance").
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | deterministic (`<document_id>::artifact::<block_id>` for images, `<document_id>::artifact::audio` for audio) |
+| document_id | TEXT FK → documents | |
+| chunk_id | TEXT, nullable | backfilled once chunking assigns the final chunk id (images); stays `NULL` for audio (one artifact, many chunks — see multimodal.md) |
+| artifact_type | TEXT | `image` / `audio` |
+| storage_path | TEXT | relative to `data/`, never absolute |
+| mime_type | TEXT, nullable | |
+| sha256 | TEXT, nullable | |
+| metadata | TEXT, nullable | JSON, e.g. `{"page": 7, "vision_status": "available"}` |
+| created_at | TEXT (ISO 8601) | |
 
 ### embeddings
 Vector index pointers, decoupled from the FAISS index itself.
@@ -97,15 +141,34 @@ The evidence chunks behind an answer.
 | attribution_score | float, nullable | |
 
 ### study_items
-Generated study material (quiz / MCQ / flashcard / summary).
+Generated study material (Phase 5, implemented — see
+[docs/architecture/study-engine.md](study-engine.md)). One row per
+validated study item: a summary/explanation/comparison request produces one
+row, a quiz/mcq/flashcards request produces one row per accepted item.
+`content` holds the full JSON-serialized, mode-specific item payload (so
+this one table covers every mode without a column per mode's fields);
+`question`/`answer` are populated only for modes that naturally have one
+(quiz/mcq/flashcards) and left `NULL` otherwise, so a future UI can
+filter/search without deserializing `content`. Never stores document
+content itself, only `source_chunk_ids` pointing back to `chunks`.
 
 | Column | Type | Notes |
 |---|---|---|
 | id | PK | |
-| type | text | quiz / mcq / flashcard / summary / comparison |
-| question | text, nullable | |
-| answer | text | |
+| request_id | text | groups every item generated by one request |
+| mode | text | summary / explain / compare / quiz / mcq / flashcards |
+| document_id | text, nullable | set when the request was scoped to one document |
+| query | text, nullable | the original query/topic |
+| question | text, nullable | populated for quiz/mcq/flashcards only |
+| answer | text, nullable | populated for quiz/mcq/flashcards only |
+| content | text (JSON) | full item payload, mode-specific shape |
 | source_chunk_ids | text (JSON array) | traceability back to evidence |
+| difficulty | text, nullable | easy / medium / hard, where applicable |
+| created_at | text (ISO 8601) | |
+
+Added additively to `schema.sql` as a new `CREATE TABLE IF NOT EXISTS` —
+unlike the Phase 4 `chunks` columns, no `ALTER TABLE` migration was needed
+since this is a brand-new table, not new columns on an existing one.
 
 ## Non-Goals
 

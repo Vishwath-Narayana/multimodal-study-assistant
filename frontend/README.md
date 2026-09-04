@@ -1,7 +1,9 @@
 # Frontend
 
-React + TypeScript + Tailwind CSS application shell for the AI-Powered
-Multimodal Study Assistant.
+React + TypeScript + Vite + Tailwind CSS student-facing application for
+the AI-Powered Multimodal Study Assistant — see
+[docs/architecture/frontend.md](../docs/architecture/frontend.md) for the
+full design.
 
 ## Setup
 
@@ -9,30 +11,57 @@ Multimodal Study Assistant.
 pnpm install
 ```
 
+Set `VITE_API_BASE_URL` in a `.env` file if the backend isn't at the
+default `http://localhost:8000`.
+
 ## Run
 
 ```bash
 pnpm dev
 ```
 
-## Build / Lint
+Requires the backend running (`cd ../backend && uv run uvicorn
+app.main:app --reload`).
+
+## Build / Lint / Test
 
 ```bash
 pnpm run build
 pnpm run lint
+pnpm test
 ```
 
 ## Structure
 
 ```
 src/
-├── components/   AppShell, UploadPlaceholder, ChatPlaceholder
-├── pages/         StudyPage
-├── styles/        Tailwind entrypoint + design tokens
-├── App.tsx
+├── components/
+│   ├── layout/      AppShell (navigation)
+│   ├── common/       Loading/Error/Empty/InsufficientEvidence states
+│   ├── documents/     UploadZone, DocumentList, StatusBadge
+│   ├── evidence/      SourceCard, EvidencePanel, ArtifactImage — shared
+│   │                  citation/evidence UI used by chat and study
+│   ├── chat/          ChatMessage (user/assistant bubbles)
+│   └── study/         GenerativePanel, GenerationControls, QuizRunner,
+│                      MCQRunner, FlashcardDeck, DocumentScopeSelect
+├── hooks/            useDocuments
+├── lib/api/           Typed API client (client.ts, documents.ts,
+│                      chunks.ts, chat.ts, study.ts, types.ts)
+├── pages/             DashboardPage, LibraryPage, DocumentPage, ChatPage,
+│                      StudyPage + pages/study/*Tab.tsx
+├── styles/            Tailwind entrypoint + design tokens
+├── App.tsx            Routes
 └── main.tsx
 ```
 
-This is currently a minimal shell (navigation, upload placeholder, chat
-placeholder) — see [docs/roadmap.md](../docs/roadmap.md) for when the real
-upload/chat/study screens are built (Phase 10).
+## Environment
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `VITE_API_BASE_URL` | `http://localhost:8000` | Backend base URL |
+
+## Known limitations
+
+See [docs/architecture/frontend.md](../docs/architecture/frontend.md)
+"Known limitations" — no conversation memory, no document-scoped chat (a
+backend limitation), no study-history view (no backend endpoint for it).

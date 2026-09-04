@@ -36,6 +36,12 @@ models/*
 *.sqlite3
 *.faiss
 *.index
+data/indexes/
+backend/data/indexes/
+
+# --- Generated experiment/benchmark results (Phase 2 retrieval) ---
+experiment-results/
+backend/experiment-results/
 
 # --- Logs ---
 *.log

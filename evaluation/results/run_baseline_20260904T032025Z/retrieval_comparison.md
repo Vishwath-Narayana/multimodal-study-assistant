@@ -1,0 +1,9 @@
+# Retrieval comparison (top_k=5)
+
+| configuration | top_k | mrr | recall_at_5 | precision_at_5 | ndcg_at_5 | hit_rate_at_5 |
+|---|---|---|---|---|---|---|
+| A_bm25 | 5 | 0.6667 | 0.6111 | 0.3833 | 0.5901 | 0.8333 |
+| B_dense | 5 | 0.8056 | 0.7083 | 0.4167 | 0.6848 | 0.9167 |
+| D_bm25_dense_simple_fusion | 5 | 0.7222 | 0.6111 | 0.3833 | 0.6219 | 0.8333 |
+| E_hybrid_rrf | 5 | 0.8542 | 0.6806 | 0.4333 | 0.7057 | 0.9167 |
+| H_hybrid_rrf_reranked | 5 | 0.7778 | 0.7639 | 0.4667 | 0.7234 | 0.9167 |

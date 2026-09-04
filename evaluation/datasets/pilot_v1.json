@@ -1,0 +1,316 @@
+{
+  "dataset_id": "pilot_v1",
+  "description": "Phase 7 pilot benchmark (7B-1). Built directly against the real Phase 1 fixtures in backend/tests/fixtures/ (study_notes.html/.docx/.pptx) \u2014 a single cell-biology topic parsed from three source formats, real BM25/BGE/FAISS ingestion, no VLM/OCR/Whisper content (none available in this environment; see docs/evaluation/DATASET.md). Deliberately small: no other real academic corpus was available when this pilot was built (see docs/evaluation/DATASET.md 'Limitations'). Regenerate with backend/scripts/build_phase7_pilot_dataset.py if a fixture file's content changes.",
+  "documents": {
+    "study_notes.html": "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+    "study_notes.docx": "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+    "study_notes.pptx": "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+  },
+  "limitations": [
+    "Single subject area (cell biology) \u2014 target of 5-10 subject areas not met; no other real academic material was available (see stop-condition discussion in the Phase 7 session log).",
+    "contradictory-source and ambiguous-query categories are not populated: the pilot corpus contains no genuinely conflicting statements, and a fabricated contradiction would violate the no-fabrication rule.",
+    "equation category is not populated: Docling formula enrichment is disabled (Phase 1 decision), so no fixture produces a real EQUATION chunk.",
+    "transcript category is not populated with real audio content: no real Whisper transcription is available in this environment (Phase 4's mocked-transcript fixture exists only for pipeline wiring, not as benchmark ground truth).",
+    "image question (p011) is retrieval-only: no VLM is available, so image/caption *content* quality is not evaluated, only whether the correct chunk is retrieved."
+  ],
+  "questions": [
+    {
+      "question_id": "p001",
+      "question": "What does photosynthesis convert light energy into?",
+      "category": "factual",
+      "modality": "text",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003"
+      ],
+      "gold_answer": "Chemical energy stored in glucose.",
+      "acceptable_answers": [
+        "chemical energy",
+        "chemical energy stored in glucose"
+      ],
+      "note": null
+    },
+    {
+      "question_id": "p002",
+      "question": "What is cellular respiration?",
+      "category": "definition",
+      "modality": "text",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+      ],
+      "gold_answer": "The process that releases energy stored in glucose through glycolysis, the citric acid cycle, and oxidative phosphorylation.",
+      "acceptable_answers": [
+        "releases energy stored in glucose"
+      ],
+      "note": null
+    },
+    {
+      "question_id": "p003",
+      "question": "Which organelle is responsible for ATP production?",
+      "category": "table",
+      "modality": "table",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00005"
+      ],
+      "gold_answer": "Mitochondria.",
+      "acceptable_answers": [
+        "mitochondria",
+        "the mitochondria"
+      ],
+      "note": null
+    },
+    {
+      "question_id": "p004",
+      "question": "According to the table, what is the chloroplast responsible for?",
+      "category": "table",
+      "modality": "table",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00005"
+      ],
+      "gold_answer": "Photosynthesis.",
+      "acceptable_answers": [
+        "photosynthesis"
+      ],
+      "note": null
+    },
+    {
+      "question_id": "p005",
+      "question": "What is covered in Section 1.2, Cellular Respiration?",
+      "category": "factual",
+      "modality": "text",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+      ],
+      "gold_answer": "Cellular respiration releasing energy via glycolysis, the citric acid cycle, and oxidative phosphorylation.",
+      "acceptable_answers": [
+        "glycolysis"
+      ],
+      "note": null
+    },
+    {
+      "question_id": "p006",
+      "question": "What is photosynthesis?",
+      "category": "cross_document",
+      "modality": "text",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001"
+      ],
+      "gold_answer": "The conversion of light energy into chemical energy stored in glucose, occurring in chloroplasts.",
+      "acceptable_answers": [
+        "converts light energy into chemical energy"
+      ],
+      "note": "Same underlying content appears in three document formats (html/docx/pptx); tests cross-document retrieval consistency, not three independent sources."
+    },
+    {
+      "question_id": "p007",
+      "question": "What is the powerhouse of the cell?",
+      "category": "factual",
+      "modality": "table",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004"
+      ],
+      "gold_answer": "The mitochondria.",
+      "acceptable_answers": [
+        "mitochondria"
+      ],
+      "note": "Common-knowledge phrasing not used verbatim in the source text; tests whether retrieval bridges the lexical gap to the organelle/function table."
+    },
+    {
+      "question_id": "p008",
+      "question": "Name both organelles discussed in the notes and what each one does.",
+      "category": "multi_hop",
+      "modality": "text",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004"
+      ],
+      "gold_answer": "Chloroplasts carry out photosynthesis; mitochondria produce ATP.",
+      "acceptable_answers": [
+        "chloroplast",
+        "mitochondria"
+      ],
+      "note": "Requires combining the organelle/function table with the photosynthesis paragraph; a single-chunk retrieval that only returns one of the two is a partial (not full) hit."
+    },
+    {
+      "question_id": "p009",
+      "question": "How does photosynthesis differ from cellular respiration in terms of energy flow?",
+      "category": "comparison",
+      "modality": "text",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+      ],
+      "gold_answer": "Photosynthesis converts light energy into stored chemical energy (glucose); cellular respiration releases that stored energy from glucose.",
+      "acceptable_answers": [
+        "photosynthesis stores",
+        "respiration releases"
+      ],
+      "note": null
+    },
+    {
+      "question_id": "p010",
+      "question": "Explain the light-dependent reactions of photosynthesis.",
+      "category": "explanation",
+      "modality": "text",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001"
+      ],
+      "gold_answer": "Light absorption by chlorophyll, an electron transport chain, then ATP and NADPH synthesis.",
+      "acceptable_answers": [
+        "light absorption",
+        "electron transport chain",
+        "ATP and NADPH"
+      ],
+      "note": null
+    },
+    {
+      "question_id": "p011",
+      "question": "What does the plant cell diagram show?",
+      "category": "image",
+      "modality": "image",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00007",
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00008",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00008"
+      ],
+      "gold_answer": null,
+      "acceptable_answers": [],
+      "note": "No VLM is available in this environment (see docs/evaluation/reference_paper.md and Phase 4 known limitations), so this question is retrieval-only: it checks whether the image/caption chunk is retrieved, not whether a generated description is correct. gold_answer is intentionally left unset rather than fabricated."
+    },
+    {
+      "question_id": "p012",
+      "question": "What does the notes set say about glycolysis, the citric acid cycle, and oxidative phosphorylation?",
+      "category": "explanation",
+      "modality": "text",
+      "answerable": true,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+      ],
+      "gold_answer": "They are the three stages through which cellular respiration releases energy stored in glucose.",
+      "acceptable_answers": [
+        "glycolysis",
+        "citric acid cycle",
+        "oxidative phosphorylation"
+      ],
+      "note": null
+    },
+    {
+      "question_id": "p013",
+      "question": "What is the measured rate of nitrogen fixation described in these notes?",
+      "category": "unanswerable",
+      "modality": "text",
+      "answerable": false,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [],
+      "gold_answer": null,
+      "acceptable_answers": [],
+      "note": "Nitrogen fixation is not covered anywhere in the pilot corpus (photosynthesis/cellular respiration only); tests abstention rather than hallucination."
+    },
+    {
+      "question_id": "p014",
+      "question": "What safety precautions does the document describe for extracting mitochondrial DNA?",
+      "category": "unanswerable",
+      "modality": "text",
+      "answerable": false,
+      "source_documents": [
+        "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85",
+        "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103",
+        "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc"
+      ],
+      "gold_chunk_ids": [],
+      "gold_answer": null,
+      "acceptable_answers": [],
+      "note": "No extraction-protocol or safety content exists in the pilot corpus; tests abstention."
+    }
+  ]
+}
