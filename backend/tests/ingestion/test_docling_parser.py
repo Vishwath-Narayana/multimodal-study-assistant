@@ -10,9 +10,25 @@ layout model does detect reliably.
 
 from pathlib import Path
 
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.pipeline_options import TableFormerMode
+
 from app.ingestion.models import BlockType
 from app.ingestion.parsers.docling_parser import DoclingParser
 from app.ingestion.storage import DataPaths, FileImageStorage
+
+
+def test_pdf_table_structure_uses_fast_mode() -> None:
+    """Table-structure recognition must stay enabled but pinned to FAST mode.
+
+    ACCURATE mode's table-structure stage segfaults on Apple Silicon during
+    a live upload even with the Heron/ONNXRuntime layout fix in place; FAST
+    mode is the confirmed-stable configuration.
+    """
+    parser = DoclingParser()
+    pdf_options = parser._converter.format_to_options[InputFormat.PDF].pipeline_options
+    assert pdf_options.do_table_structure is True
+    assert pdf_options.table_structure_options.mode == TableFormerMode.FAST
 
 
 def _parse(fixtures_dir: Path, tmp_path: Path, filename: str):
