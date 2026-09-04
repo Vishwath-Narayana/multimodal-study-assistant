@@ -28,6 +28,9 @@ then evaluates our own extensions on top of it. See
 14. [Research / Reproducibility](#14-research--reproducibility)
 15. [Roadmap](#15-roadmap)
 16. [License](#16-license)
+17. [Security](#security)
+18. [Limitations](#limitations)
+19. [Final Project Documentation](#final-project-documentation)
 
 ## 1. Overview
 
@@ -67,20 +70,28 @@ Planned end-state feature set (built incrementally by phase, see
 - Contradiction detection across sources
 - Evidence sufficiency checking and explicit abstention
 
-**Status:** quiz/MCQ/flashcard generation is not implemented yet. Document
+**Status (Phase 9, final):** all planned phases are complete — document
 ingestion (Phase 1), baseline retrieval (Phase 2 — BM25, dense/FAISS, RRF,
 HyDE, cross-encoder reranking; see
 [docs/architecture/retrieval.md](docs/architecture/retrieval.md)),
 grounded generation + explainability (Phase 3 — citations, attribution,
 token grounding, evidence sufficiency/abstention, contradiction detection;
 see [docs/architecture/generation.md](docs/architecture/generation.md)),
-and multimodal processing (Phase 5 in `docs/roadmap.md`'s numbering,
-"Phase 4" per the implementation brief it was built from — images/
-diagrams via VLM+OCR, tables, audio/Whisper transcription with
-timestamps; see
-[docs/architecture/multimodal.md](docs/architecture/multimodal.md)) are
-complete. Study-generation features depend on the study engine, which has
-not started — see [Roadmap](#15-roadmap).
+multimodal processing (images/diagrams via VLM+OCR, tables, audio/Whisper
+transcription with timestamps; see
+[docs/architecture/multimodal.md](docs/architecture/multimodal.md)),
+the study engine (summary/explain/compare/quiz/mcq/flashcards; see
+[docs/architecture/study-engine.md](docs/architecture/study-engine.md)),
+the application UI (see
+[docs/architecture/frontend.md](docs/architecture/frontend.md)),
+a pilot evaluation/benchmark (see [Evaluation Results](#13-evaluation)),
+and security hardening (see [Security](#security)) are all implemented.
+See [docs/final/](docs/final/) for final validation, consolidated
+results, architecture, and report/demo/viva material. **Live generation
+(chat and study modes) requires a local Ollama installation, which is
+optional and not bundled** — without it, those endpoints correctly return
+a `503` rather than a fabricated answer; retrieval-only endpoints and all
+non-generation features work without it. See [Limitations](#limitations).
 
 ## 5. Research Foundation
 
@@ -171,9 +182,12 @@ until experiments are actually run — see [Evaluation](#13-evaluation).
 | Backend tooling | uv, pytest, Ruff, mypy |
 | Frontend tooling | pnpm, oxlint |
 
-Nothing marked "planned" is implemented yet. This is a local-first
-project deliberately without Kubernetes, microservices, Redis, Kafka,
-PostgreSQL, or cloud infrastructure — see
+Every row above is implemented as of Phase 9; Ollama, Tesseract, and a
+VLM model are genuinely optional local dependencies (the app degrades to
+explicit `503` errors for generation-dependent endpoints if they're not
+installed, rather than failing silently or faking output). This is a
+local-first project deliberately without Kubernetes, microservices,
+Redis, Kafka, PostgreSQL, or cloud infrastructure — see
 [docs/decisions/ADR-002-local-first.md](docs/decisions/ADR-002-local-first.md).
 
 ## 9. Repository Structure
@@ -270,6 +284,28 @@ No benchmark numbers are reported anywhere in this repository until the
 corresponding experiments have actually been run. The system does not claim
 to be hallucination-free or to achieve perfect accuracy.
 
+**Pilot retrieval results** (real measurements on `pilot_v1`: 3 documents,
+23 chunks, 14 questions, 12 answerable — see
+[docs/evaluation/PHASE_7_EVALUATION_REPORT.md](docs/evaluation/PHASE_7_EVALUATION_REPORT.md)):
+
+| Configuration | MRR | Recall@5 |
+|---|---|---|
+| BM25 only | 0.667 | 0.611 |
+| Dense (BGE) only | 0.806 | 0.708 |
+| BM25+Dense, simple fusion | 0.722 | 0.611 |
+| Hybrid RRF | 0.854 | 0.681 |
+| Hybrid RRF + reranker | 0.778 | 0.764 |
+
+Hybrid RRF gave the best MRR; reranking gave the best Recall@5 but
+reduced MRR — a trade-off, not a clean win either way, and none of these
+differences are statistically significant at this sample size (n=12).
+This is a small pilot benchmark, not a large-scale academic result.
+**Generation, HyDE, and live multimodal (VLM/OCR/transcription)
+evaluation were NOT measured** — the required local dependencies (Ollama,
+Tesseract) were unavailable in the evaluation environment. See
+[docs/final/FINAL_PROJECT_REPORT_CONTENT.md](docs/final/FINAL_PROJECT_REPORT_CONTENT.md)
+for the full consolidated results and interpretation.
+
 ## 14. Research / Reproducibility
 
 Every experiment must record its exact configuration (model names/versions,
@@ -279,14 +315,75 @@ seeds). See [docs/research/reproducibility.md](docs/research/reproducibility.md)
 ## 15. Roadmap
 
 See [docs/roadmap.md](docs/roadmap.md) for the full phase-by-phase plan.
-Current status: document ingestion, baseline retrieval, grounded
-generation + explainability, and multimodal processing are complete. See
+**All phases are complete as of Phase 9 (final)**: document ingestion,
+baseline retrieval, grounded generation + explainability, multimodal
+processing, the study engine, the application UI, evaluation/
+benchmarking, security hardening, and final validation/documentation. See
 [docs/architecture/ingestion.md](docs/architecture/ingestion.md),
 [docs/architecture/retrieval.md](docs/architecture/retrieval.md),
-[docs/architecture/generation.md](docs/architecture/generation.md), and
-[docs/architecture/multimodal.md](docs/architecture/multimodal.md) for
-what was built.
+[docs/architecture/generation.md](docs/architecture/generation.md),
+[docs/architecture/multimodal.md](docs/architecture/multimodal.md),
+[docs/architecture/study-engine.md](docs/architecture/study-engine.md), and
+[docs/architecture/frontend.md](docs/architecture/frontend.md) for what
+was built, and [docs/final/SYSTEM_ARCHITECTURE.md](docs/final/SYSTEM_ARCHITECTURE.md)
+for the final, consolidated architecture.
 
 ## 16. License
 
 See [LICENSE](LICENSE).
+
+## Security
+
+The system was audited and hardened in a dedicated phase (Phase 8)
+against RAG-specific and conventional web-application threats: malicious
+uploads (magic-byte content validation, not just extension checks),
+indirect prompt injection via retrieved document content
+(evidence-is-data framing + structural marker neutralization + log-only
+detection), citation/provenance forgery (deterministic, backend-validated
+citations), resource exhaustion (query length/`top_k`/document
+size/chunk-count ceilings), and unsafe error exposure (generic error
+responses, no stack traces). 70 dedicated security tests pass under
+`backend/tests/security/`. One dependency vulnerability is documented as
+an accepted residual risk with a verified-unreachable exploit path
+(`transformers` CVE-2026-9856 — see
+[docs/security/PHASE_8_SECURITY_REPORT.md](docs/security/PHASE_8_SECURITY_REPORT.md)).
+**This remains a local-first, single-user system with no authentication
+or multi-tenant isolation, by design** — not recommended for multi-tenant
+or public-network deployment without further work. Full detail:
+[docs/security/](docs/security/) (`SECURITY_AUDIT.md`, `THREAT_MODEL.md`,
+`SECURITY_CONFIGURATION.md`, `SECURITY_TEST_MATRIX.md`).
+
+## Limitations
+
+- Pilot evaluation corpus is small (3 documents, 23 chunks, 14 questions)
+  — not a large-scale academic benchmark.
+- No statistically significant retrieval result at this sample size.
+- No live generation, HyDE, VLM, OCR, or live-transcription benchmark —
+  Ollama and Tesseract were unavailable in the development/evaluation
+  environment; the corresponding code paths are tested with deterministic
+  fixtures and mocked providers, and fail safely (explicit errors, never
+  fabricated output) when the real dependency is missing.
+- No direct visual (CLIP-style) embedding retrieval — images/diagrams are
+  retrieved via their derived OCR/VLM text representation only.
+- Single-user, local-first deployment; no authentication or multi-tenant
+  isolation.
+- Prompt injection and document-poisoning risk are reduced by structural
+  mitigations, not eliminated — no prompt-engineering or detection layer
+  can guarantee an LLM is never influenced by adversarial context text.
+
+See [docs/final/FINAL_PROJECT_REPORT_CONTENT.md](docs/final/FINAL_PROJECT_REPORT_CONTENT.md)
+§"Limitations" and §"Future Work" for full detail.
+
+## Final Project Documentation
+
+Phase 9 (final) consolidated report-ready material under
+[docs/final/](docs/final/):
+
+- [SYSTEM_ARCHITECTURE.md](docs/final/SYSTEM_ARCHITECTURE.md) — final, consolidated architecture
+- [FINAL_PROJECT_REPORT_CONTENT.md](docs/final/FINAL_PROJECT_REPORT_CONTENT.md) — report-ready content (abstract through conclusion)
+- [FINAL_TEST_MATRIX.md](docs/final/FINAL_TEST_MATRIX.md) — feature-by-feature validation status
+- [DEMO_SCRIPT.md](docs/final/DEMO_SCRIPT.md) — 7–10 minute demo walkthrough with fallbacks
+- [VIVA_PREPARATION.md](docs/final/VIVA_PREPARATION.md) — likely viva questions and answers
+- [SUBMISSION_CHECKLIST.md](docs/final/SUBMISSION_CHECKLIST.md) — reproducibility/submission verification
+- [PHASE_9_FINAL_REPORT.md](docs/final/PHASE_9_FINAL_REPORT.md) — final phase report
+- [final_system_manifest.json](docs/final/final_system_manifest.json) — machine-readable final state snapshot
