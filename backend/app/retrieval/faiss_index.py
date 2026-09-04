@@ -31,8 +31,8 @@ import json
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import faiss
 import numpy as np
 
 from app.ingestion.models import Chunk
@@ -44,6 +44,15 @@ from app.retrieval.errors import (
     NoIndexedChunksError,
     StaleIndexError,
 )
+
+if TYPE_CHECKING:
+    # `faiss` bundles its own OpenMP runtime, which conflicts with the one
+    # Docling/TableFormer's torch loads in-process (see
+    # app/retrieval/__init__.py) — importing it eagerly at module load time
+    # made every `app.main` import (and thus every document upload) pull it
+    # in. Deferred to inside the methods that actually touch the `faiss`
+    # module; this TYPE_CHECKING import is type-checker-only and never runs.
+    import faiss
 
 _INDEX_FILENAME = "faiss.index"
 _MANIFEST_FILENAME = "manifest.json"
@@ -106,6 +115,8 @@ class FaissIndexStore:
         chunk_target_tokens: int,
         chunk_overlap_tokens: int,
     ) -> FaissIndexStore:
+        import faiss
+
         eligible = eligible_chunks(chunks)
         if not eligible:
             raise NoIndexedChunksError(
@@ -175,6 +186,8 @@ class FaissIndexStore:
         given, lets callers supply fresh chunk content (e.g. for staleness
         checks); otherwise search results carry only what the id map + a
         provided chunk lookup can supply."""
+        import faiss
+
         if not self.exists():
             raise IndexNotBuiltError(
                 f"No FAISS index found at {self.index_dir}. Build it first."
