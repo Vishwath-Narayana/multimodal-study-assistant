@@ -36,6 +36,7 @@ class ImageEnrichmentService:
         data_paths: DataPaths,
         max_image_size_bytes: int,
         max_image_pixels: int,
+        max_artifacts_per_document: int | None = None,
     ) -> None:
         self._vision = vision_provider
         self._ocr = ocr_provider
@@ -43,6 +44,15 @@ class ImageEnrichmentService:
         self._paths = data_paths
         self._max_image_size_bytes = max_image_size_bytes
         self._max_image_pixels = max_image_pixels
+        # Phase 8 (spec section 8J: "excessive document processing") — caps
+        # how many images from *one document* are sent through OCR/VLM.
+        # `None` means unbounded, for existing tests/callers that construct
+        # this class directly. Keyed per `IngestionService.ingest()` call —
+        # a fresh `ImageEnrichmentService` is built per request (see
+        # `app.api.documents._get_ingestion_service`), so this counter never
+        # leaks across documents/requests.
+        self._max_artifacts_per_document = max_artifacts_per_document
+        self._enriched_count = 0
 
     def enrich(self, document_id: str, block: DocumentBlock) -> DocumentBlock:
         """Returns a new `DocumentBlock` with OCR/VLM fields, `artifact_id`,
@@ -51,6 +61,15 @@ class ImageEnrichmentService:
         ingestion pipeline's preference for pure transformations)."""
         if block.image_path is None:
             return block
+
+        if (
+            self._max_artifacts_per_document is not None
+            and self._enriched_count >= self._max_artifacts_per_document
+        ):
+            # Original image reference is preserved (spec section 7); only
+            # OCR/VLM enrichment is skipped beyond the cap.
+            return block
+        self._enriched_count += 1
 
         absolute_path = self._paths.root / block.image_path
         try:

@@ -21,6 +21,7 @@ early in the ranked results.
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -30,6 +31,7 @@ from app.api.retrieval import _get_connection, get_retrieval_service
 from app.core.config import Settings, get_settings
 from app.generation.citations import DeterministicCitationValidator
 from app.generation.contradiction import ContradictionConfig, LexicalContradictionChecker
+from app.generation.injection_detection import scan_evidence_for_injection_signals
 from app.generation.models import Citation, ContradictionResult, SufficiencyResult
 from app.generation.sufficiency import HeuristicSufficiencyChecker, SufficiencyConfig
 from app.ingestion.repository import ChunkRepository, DocumentRepository
@@ -92,6 +94,8 @@ from app.study.models import (
 )
 from app.study.repository import StudyItemRepository
 from app.study.service import StudyEngineService, StudyEngineServiceConfig
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/study", tags=["study"])
 
@@ -204,7 +208,18 @@ def _retrieve(
         evidence, trace = retrieval_service.retrieve(query, mode, top_k=top_k)
     except RetrievalError as exc:
         raise _handle_retrieval_error(exc) from exc
-    return _scope_to_document(evidence, document_id), trace.request_id, trace.timings.total_ms
+    scoped = _scope_to_document(evidence, document_id)
+    evidence_pairs = [(item.chunk_id, item.content) for item in scoped]
+    for signal in scan_evidence_for_injection_signals(evidence_pairs):
+        logger.warning(
+            "security.prompt_injection_signal request_id=%s chunk_id=%s "
+            "matched_patterns=%s score=%.2f",
+            trace.request_id,
+            signal.chunk_id,
+            ",".join(signal.matched_patterns),
+            signal.score,
+        )
+    return scoped, trace.request_id, trace.timings.total_ms
 
 
 def _build_evidence_items(

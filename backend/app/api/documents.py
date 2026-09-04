@@ -107,6 +107,7 @@ def _get_ingestion_service(
         data_paths=data_paths,
         max_image_size_bytes=settings.max_image_artifact_size_mb * 1024 * 1024,
         max_image_pixels=settings.max_image_pixels,
+        max_artifacts_per_document=settings.security_max_artifacts_per_document,
     )
     return IngestionService(
         parser=parser,
@@ -123,6 +124,9 @@ def _get_ingestion_service(
         ),
         image_enricher=image_enricher,
         artifact_repo=artifact_repo,
+        max_document_pages=settings.security_max_document_pages,
+        max_extracted_chars=settings.security_max_extracted_chars,
+        max_chunks_per_document=settings.security_max_chunks_per_document,
     )
 
 

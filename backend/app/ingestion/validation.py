@@ -13,6 +13,26 @@ from dataclasses import dataclass
 from app.ingestion.errors import ValidationError
 from app.ingestion.storage import sanitize_filename
 
+# Magic-byte signatures for formats that have one (spec section 8B: "never
+# trust ... file extension alone"). DOCX/PPTX are both ZIP containers, so
+# they share the ZIP local-file-header signature; PDF has its own. HTML has
+# no reliable binary signature (it is arbitrary text/markup) — it is
+# deliberately left out of `_MAGIC_BYTES` rather than guessed at, and
+# `_looks_like_declared_type` treats "no known signature" as "cannot check,
+# don't false-reject" (same policy as `app.multimodal.security`).
+_MAGIC_BYTES: dict[str, tuple[bytes, ...]] = {
+    "pdf": (b"%PDF-",),
+    "docx": (b"PK\x03\x04",),
+    "pptx": (b"PK\x03\x04",),
+}
+
+
+def _looks_like_declared_type(data: bytes, extension: str) -> bool:
+    signatures = _MAGIC_BYTES.get(extension)
+    if signatures is None:
+        return True
+    return any(data.startswith(sig) for sig in signatures)
+
 
 @dataclass(frozen=True)
 class ValidatedUpload:
@@ -52,6 +72,11 @@ def validate_upload(
     if len(data) > max_size_bytes:
         max_mb = max_size_bytes / (1024 * 1024)
         raise ValidationError(f"The uploaded file exceeds the {max_mb:.0f}MB size limit.")
+
+    if not _looks_like_declared_type(data, extension):
+        raise ValidationError(
+            f"The uploaded file does not look like a valid .{extension} file."
+        )
 
     return ValidatedUpload(
         original_filename=filename,

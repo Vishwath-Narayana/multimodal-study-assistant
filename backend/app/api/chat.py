@@ -11,6 +11,7 @@ answer out (see docs/roadmap.md Phase 3 scope).
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -29,6 +30,7 @@ from app.generation.errors import (
     ProviderUnavailableError,
 )
 from app.generation.generator import OllamaGenerator
+from app.generation.injection_detection import scan_evidence_for_injection_signals
 from app.generation.interfaces import Generator
 from app.generation.models import GenerationResponse
 from app.generation.service import GenerationService, GenerationServiceConfig
@@ -51,6 +53,8 @@ from app.schemas.generation import (
     SufficiencyResponse,
     preview,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -269,6 +273,18 @@ def query(
             500,
         )
         raise HTTPException(status_code=status_code, detail=exc.message) from exc
+
+    for signal in scan_evidence_for_injection_signals(
+        [(item.chunk_id, item.content) for item in evidence]
+    ):
+        logger.warning(
+            "security.prompt_injection_signal request_id=%s chunk_id=%s "
+            "matched_patterns=%s score=%.2f",
+            retrieval_trace.request_id,
+            signal.chunk_id,
+            ",".join(signal.matched_patterns),
+            signal.score,
+        )
 
     try:
         result = generation_service.answer(

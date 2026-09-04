@@ -19,6 +19,7 @@ tripping cleanly, and a dedicated field is easier to validate deterministically
 
 from __future__ import annotations
 
+from app.generation.prompt_security import neutralize_prompt_markers
 from app.retrieval.models import RetrievalResult
 from app.study.models import Difficulty, ExplanationStyle, QuestionType, SummaryLength
 
@@ -42,7 +43,8 @@ def _format_evidence_block(evidence: list[RetrievalResult]) -> str:
         if item.section:
             location_bits.append(f'section "{item.section}"')
         location = f" ({', '.join(location_bits)})" if location_bits else ""
-        lines.append(f"[chunk:{item.chunk_id}]{location}:\n{item.content}")
+        content = neutralize_prompt_markers(item.content)
+        lines.append(f"[chunk:{item.chunk_id}]{location}:\n{content}")
     return "\n\n".join(lines)
 
 
