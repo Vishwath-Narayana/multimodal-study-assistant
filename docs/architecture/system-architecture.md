@@ -1,9 +1,14 @@
 # System Architecture
 
-Status: **design document**. Only the pieces explicitly marked "implemented"
-exist in code today (Phase 0: FastAPI app skeleton + `/health`). Everything
-else describes the intended architecture that will be built phase-by-phase
-per [docs/roadmap.md](../roadmap.md).
+Status: this document was written in Phase 0 as a **design document**, when
+only `/health` existed, and each section below still carries its own
+per-phase "Status: implemented for Phase N" note documenting when that
+piece was actually built. As of Phase 9 (final), Phases 0–8 are all
+complete and merged into `develop` — see
+[docs/final/SYSTEM_ARCHITECTURE.md](../final/SYSTEM_ARCHITECTURE.md) for
+the consolidated, final, "as implemented" version of this document, with
+per-phase detail still cross-referenced to `ingestion.md`, `retrieval.md`,
+`generation.md`, `multimodal.md`, and `study-engine.md` as before.
 
 ## 1. High-Level Architecture
 
