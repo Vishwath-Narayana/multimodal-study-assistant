@@ -26,3 +26,10 @@ class ParserError(IngestionError):
 
 class StorageError(IngestionError):
     """Reading or writing ingestion-related files/paths failed."""
+
+
+class ResourceLimitExceededError(ValidationError):
+    """A parsed document exceeded a configured resource ceiling (page
+    count, extracted text size, or chunk count) — spec section 8B.2/8J.
+    Subclasses ValidationError (not ParserError) since the document parsed
+    fine; it was rejected for size, not malformation."""

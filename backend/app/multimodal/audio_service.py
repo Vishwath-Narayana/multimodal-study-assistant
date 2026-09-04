@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from app.ingestion.errors import StorageError
 from app.ingestion.hashing import document_id_from_hash, sha256_bytes
 from app.ingestion.repository import ChunkRepository, DocumentRepository, DocumentUpsert
-from app.ingestion.storage import DataPaths, save_upload
+from app.ingestion.storage import DataPaths, delete_document_files, save_upload
 from app.multimodal.audio_chunking import chunk_transcript
 from app.multimodal.interfaces import TranscriptionProvider
 from app.multimodal.models import Artifact, ArtifactType, TranscriptionStatus
@@ -212,6 +212,12 @@ class AudioIngestionService:
                 error_message=message,
             )
         )
+        # Spec section 8B/8K: never leave a failed upload's raw audio bytes
+        # on disk — mirrors app.ingestion.service.IngestionService's same
+        # cleanup-on-failure discipline. Best-effort: a no-op when nothing
+        # was saved yet (e.g. transcription provider unavailable before
+        # `save_upload` ran).
+        delete_document_files(self._paths, document_id)
         logger.warning("audio_ingestion.failed document_id=%s error=%s", document_id, message)
         return AudioIngestionResult(
             document_id=document_id,

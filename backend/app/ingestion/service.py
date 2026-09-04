@@ -13,12 +13,17 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from app.ingestion.chunking import ChunkingConfig, chunk_document
-from app.ingestion.errors import IngestionError, ParserError, ValidationError
+from app.ingestion.errors import (
+    IngestionError,
+    ParserError,
+    ResourceLimitExceededError,
+    ValidationError,
+)
 from app.ingestion.hashing import document_id_from_hash, sha256_bytes
 from app.ingestion.models import BlockType, ParsedDocument
 from app.ingestion.parsers.base import DocumentParser
 from app.ingestion.repository import ChunkRepository, DocumentRepository, DocumentUpsert
-from app.ingestion.storage import DataPaths, save_upload
+from app.ingestion.storage import DataPaths, delete_document_files, save_upload
 from app.ingestion.validation import validate_upload
 
 if TYPE_CHECKING:
@@ -53,6 +58,9 @@ class IngestionService:
         chunking_config: ChunkingConfig,
         image_enricher: ImageEnrichmentService | None = None,
         artifact_repo: ArtifactRepository | None = None,
+        max_document_pages: int | None = None,
+        max_extracted_chars: int | None = None,
+        max_chunks_per_document: int | None = None,
     ) -> None:
         self._parser = parser
         self._documents = document_repo
@@ -67,6 +75,12 @@ class IngestionService:
         # it did in Phase 1 (image blocks kept, no OCR/VLM attempted).
         self._image_enricher = image_enricher
         self._artifact_repo = artifact_repo
+        # Phase 8 resource ceilings (spec section 8B.2/8C) — all optional
+        # (None = unbounded) so every existing test/caller that constructs
+        # `IngestionService` directly keeps working unchanged.
+        self._max_document_pages = max_document_pages
+        self._max_extracted_chars = max_extracted_chars
+        self._max_chunks_per_document = max_chunks_per_document
 
     def ingest(self, filename: str, data: bytes) -> IngestionResult:
         started = time.monotonic()
@@ -112,6 +126,7 @@ class IngestionService:
         try:
             save_upload(self._paths, document_id, validated.safe_filename, data)
             parsed = self._parse(document_id, validated.original_filename, file_hash)
+            self._enforce_resource_limits(parsed)
             if self._image_enricher is not None:
                 parsed.blocks = [
                     self._image_enricher.enrich(document_id, block)
@@ -120,6 +135,14 @@ class IngestionService:
                     for block in parsed.blocks
                 ]
             chunks = chunk_document(document_id, parsed.blocks, self._chunking_config)
+            if (
+                self._max_chunks_per_document is not None
+                and len(chunks) > self._max_chunks_per_document
+            ):
+                raise ResourceLimitExceededError(
+                    "Document produced more chunks than the allowed limit "
+                    f"({self._max_chunks_per_document}); it was not indexed."
+                )
             self._chunks.replace_for_document(document_id, chunks)
             if self._artifact_repo is not None:
                 for chunk in chunks:
@@ -180,6 +203,13 @@ class IngestionService:
                     error_message=exc.message,
                 )
             )
+            # Spec section 8B/8K: never leave a failed upload's raw bytes
+            # (or any partially-produced processed/ artifacts) on disk —
+            # otherwise repeated uploads of different documents that always
+            # fail parsing/validation would accumulate disk usage
+            # indefinitely. Best-effort: this only ever runs after
+            # `save_upload` succeeded, but is safe to call unconditionally.
+            delete_document_files(self._paths, document_id)
             logger.warning(
                 "ingestion.failed document_id=%s filename=%s error=%s",
                 document_id,
@@ -196,6 +226,32 @@ class IngestionService:
                 duplicate=False,
                 error_message=exc.message,
             )
+
+    def _enforce_resource_limits(self, parsed: ParsedDocument) -> None:
+        """Reject an otherwise-successfully-parsed document that exceeds a
+        configured resource ceiling (spec section 8B.2/8C) before it is
+        enriched, chunked, or persisted. Raising here (rather than
+        truncating silently) keeps ingestion's fail-safe discipline: a
+        document is either indexed in full or not indexed at all, never
+        partially/silently truncated."""
+        page_count = parsed.metadata.page_count
+        if (
+            self._max_document_pages is not None
+            and page_count is not None
+            and page_count > self._max_document_pages
+        ):
+            raise ResourceLimitExceededError(
+                f"Document has {page_count} pages, exceeding the allowed limit "
+                f"({self._max_document_pages})."
+            )
+
+        if self._max_extracted_chars is not None:
+            total_chars = sum(len(block.content) for block in parsed.blocks)
+            if total_chars > self._max_extracted_chars:
+                raise ResourceLimitExceededError(
+                    "Document's extracted text exceeds the allowed size limit "
+                    f"({self._max_extracted_chars} characters)."
+                )
 
     def _parse(self, document_id: str, filename: str, file_hash: str) -> ParsedDocument:
         file_path = self._paths.raw_file_path(document_id, filename)
