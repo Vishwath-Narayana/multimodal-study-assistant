@@ -205,7 +205,9 @@ class Settings(BaseSettings):
     # "concise hypothetical passage", not a full answer) and deterministic
     # temperature is not mandated by EduRAG — low temperature here favours
     # reproducibility over diversity.
-    hyde_max_tokens: int = 256
+    # Note: reasoning models like DeepSeek-R1 require higher token budget
+    # to allocate tokens for both thinking and response generation.
+    hyde_max_tokens: int = 512
     hyde_temperature: float = 0.2
 
     # Implementation choice: HTTP timeout for the local Ollama call.
