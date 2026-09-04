@@ -1,0 +1,145 @@
+{
+  "manifest": {
+    "timestamp": "2026-09-04T03:20:25.224204+00:00",
+    "git_commit": "80c43273c0631304c49a8e39deb7e7b417b3c05f",
+    "git_branch": "feature/evaluation-benchmarking",
+    "python_version": "3.12.13",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "dataset_id": "pilot_v1",
+    "dataset_stats": {
+      "question_count": 14,
+      "document_count": 3,
+      "answerable_count": 12,
+      "unanswerable_count": 2,
+      "by_category": {
+        "factual": 3,
+        "definition": 1,
+        "table": 2,
+        "cross_document": 1,
+        "multi_hop": 1,
+        "comparison": 1,
+        "explanation": 2,
+        "image": 1,
+        "unanswerable": 2
+      },
+      "by_modality": {
+        "text": 10,
+        "table": 3,
+        "image": 1
+      }
+    },
+    "seed": 42,
+    "availability": {
+      "sentence_transformers": {
+        "available": true,
+        "detail": "6.0.1"
+      },
+      "faiss": {
+        "available": true,
+        "detail": "importable"
+      },
+      "ollama": {
+        "available": false,
+        "detail": "`ollama` binary not found on PATH"
+      },
+      "tesseract": {
+        "available": false,
+        "detail": "`tesseract` binary not found on PATH"
+      },
+      "faster_whisper": {
+        "available": true,
+        "detail": "importable"
+      }
+    }
+  },
+  "headline_top_k": 5,
+  "headline_results": [
+    {
+      "configuration": "A_bm25",
+      "top_k": 5,
+      "mrr": 0.6667,
+      "recall_at_5": 0.6111,
+      "precision_at_5": 0.3833,
+      "ndcg_at_5": 0.5901,
+      "hit_rate_at_5": 0.8333
+    },
+    {
+      "configuration": "B_dense",
+      "top_k": 5,
+      "mrr": 0.8056,
+      "recall_at_5": 0.7083,
+      "precision_at_5": 0.4167,
+      "ndcg_at_5": 0.6848,
+      "hit_rate_at_5": 0.9167
+    },
+    {
+      "configuration": "D_bm25_dense_simple_fusion",
+      "top_k": 5,
+      "mrr": 0.7222,
+      "recall_at_5": 0.6111,
+      "precision_at_5": 0.3833,
+      "ndcg_at_5": 0.6219,
+      "hit_rate_at_5": 0.8333
+    },
+    {
+      "configuration": "E_hybrid_rrf",
+      "top_k": 5,
+      "mrr": 0.8542,
+      "recall_at_5": 0.6806,
+      "precision_at_5": 0.4333,
+      "ndcg_at_5": 0.7057,
+      "hit_rate_at_5": 0.9167
+    },
+    {
+      "configuration": "H_hybrid_rrf_reranked",
+      "top_k": 5,
+      "mrr": 0.7778,
+      "recall_at_5": 0.7639,
+      "precision_at_5": 0.4667,
+      "ndcg_at_5": 0.7234,
+      "hit_rate_at_5": 0.9167
+    }
+  ],
+  "hyde_pipeline_validation": {
+    "status": "PIPELINE VALIDATED (mocked HyDE, not a real measurement)",
+    "rows_saved": "/Users/vishwatht/PROJECTS/multimodal-study-assistant/evaluation/results/run_baseline_20260904T032025Z/hyde_pipeline_validation.json"
+  },
+  "chunking_experiment": {
+    "c1_aggregate": {
+      "reciprocal_rank": 0.8541666666666666,
+      "recall_at_1": 0.2847222222222222,
+      "recall_at_3": 0.5694444444444444,
+      "recall_at_5": 0.6805555555555555,
+      "recall_at_10": 0.6805555555555555,
+      "precision_at_1": 0.8333333333333334,
+      "precision_at_5": 0.43333333333333335,
+      "precision_at_10": 0.21666666666666667,
+      "hit_rate_at_5": 0.9166666666666666,
+      "ndcg_at_5": 0.7056521906969165,
+      "ndcg_at_10": 0.6966697611532072,
+      "latency_ms": 9.634736081352457
+    },
+    "c2_aggregate": {
+      "reciprocal_rank": 0.8541666666666666,
+      "recall_at_1": 0.2847222222222222,
+      "recall_at_3": 0.5694444444444444,
+      "recall_at_5": 0.6805555555555555,
+      "recall_at_10": 0.6805555555555555,
+      "precision_at_1": 0.8333333333333334,
+      "precision_at_5": 0.43333333333333335,
+      "precision_at_10": 0.21666666666666667,
+      "hit_rate_at_5": 0.9166666666666666,
+      "ndcg_at_5": 0.7056521906969165,
+      "ndcg_at_10": 0.6966697611532072,
+      "latency_ms": 10.17658325630085
+    },
+    "mean_token_inflation_ratio": 2.1940277777777775
+  },
+  "failure_analysis": {
+    "failure_count": 8,
+    "total_questions": 12,
+    "categories": {
+      "chunk_boundary_or_ranking_problem": 8
+    }
+  }
+}
