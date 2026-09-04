@@ -23,6 +23,14 @@ Known limitations (documented rather than silently worked around):
   from DOCX/PPTX core properties where present; PDF/HTML do not expose
   equivalent metadata through Docling and are left as ``None`` rather
   than guessed.
+- PDF layout detection is pinned to the Heron model running on the
+  ONNXRuntime engine (CPUExecutionProvider) instead of Docling's default
+  Transformers/PyTorch engine. On Apple Silicon (e.g. M1 Pro, 16GB RAM),
+  the Transformers/PyTorch path segfaults natively while loading the
+  Heron layout model; the ONNXRuntime engine uses the same model weights
+  (``docling-project/docling-layout-heron-onnx``) without that crash.
+  This only affects the PDF format option; DOCX/PPTX/HTML keep Docling's
+  defaults.
 """
 
 from __future__ import annotations
@@ -31,7 +39,22 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from docling.document_converter import DocumentConverter
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.object_detection_engine_options import (
+    OnnxRuntimeObjectDetectionEngineOptions,
+)
+from docling.datamodel.pipeline_options import (
+    AcceleratorDevice,
+    AcceleratorOptions,
+    LayoutObjectDetectionOptions,
+    PdfPipelineOptions,
+)
+from docling.datamodel.stage_model_specs import (
+    EngineModelConfig,
+    ObjectDetectionEngineType,
+    ObjectDetectionModelSpec,
+)
+from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling_core.types.doc.document import DoclingDocument
 from docling_core.types.doc.labels import DocItemLabel
 
@@ -59,8 +82,41 @@ class DoclingParser:
     """Parses PDF/DOCX/PPTX/HTML into the canonical document model."""
 
     def __init__(self, image_storage: ImageStorage | None = None) -> None:
-        self._converter = DocumentConverter()
+        self._converter = self._build_converter()
         self._image_storage = image_storage
+
+    @staticmethod
+    def _build_converter() -> DocumentConverter:
+        """Build the Docling converter, pinning PDF layout to Heron/ONNXRuntime.
+
+        Only the PDF format option is overridden; DOCX/PPTX/HTML use
+        Docling's defaults untouched.
+        """
+        layout_options = LayoutObjectDetectionOptions(
+            engine_options=OnnxRuntimeObjectDetectionEngineOptions(
+                providers=["CPUExecutionProvider"]
+            ),
+            model_spec=ObjectDetectionModelSpec(
+                name="layout_heron",
+                repo_id="docling-project/docling-layout-heron",
+                revision="main",
+                engine_overrides={
+                    ObjectDetectionEngineType.ONNXRUNTIME: EngineModelConfig(
+                        repo_id="docling-project/docling-layout-heron-onnx",
+                        extra_config={"model_filename": "model.onnx"},
+                    )
+                },
+            ),
+        )
+        pdf_pipeline_options = PdfPipelineOptions(
+            accelerator_options=AcceleratorOptions(device=AcceleratorDevice.CPU),
+            layout_options=layout_options,
+        )
+        return DocumentConverter(
+            format_options={
+                InputFormat.PDF: PdfFormatOption(pipeline_options=pdf_pipeline_options)
+            }
+        )
 
     def supports(self, file_type: str) -> bool:
         return file_type.lower() in _SUPPORTED_FILE_TYPES
