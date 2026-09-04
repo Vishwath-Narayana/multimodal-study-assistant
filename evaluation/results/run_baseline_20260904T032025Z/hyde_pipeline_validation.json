@@ -1,0 +1,290 @@
+[
+  {
+    "query_id": "p001",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p001",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p002",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p002",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p003",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p003",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00008",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p004",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p004",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p005",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p005",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::section::00002",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p006",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p006",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p007",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p007",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p008",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p008",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p009",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p009",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p010",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p010",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p011",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p011",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00008",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00001",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p012",
+    "mode": "dense_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  },
+  {
+    "query_id": "p012",
+    "mode": "hybrid_rrf_hyde",
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003"
+    ],
+    "note": "MOCKED HyDE \u2014 pipeline wiring check only, not a real measurement"
+  }
+]

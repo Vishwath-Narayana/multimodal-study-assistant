@@ -1,0 +1,172 @@
+[
+  {
+    "query_id": "p002",
+    "category": "definition",
+    "modality": "text",
+    "recall_at_5": 0.6666666666666666,
+    "reciprocal_rank": 1.0,
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006"
+    ],
+    "relevant_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+    ],
+    "failure_type": "chunk_boundary_or_ranking_problem",
+    "detail": "Both BM25 and dense retrieval found the gold chunk in their top 20, but it was ranked outside the final top-k after fusion/reranking."
+  },
+  {
+    "query_id": "p005",
+    "category": "factual",
+    "modality": "text",
+    "recall_at_5": 0.5,
+    "reciprocal_rank": 1.0,
+    "retrieved_chunk_ids": [
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00005",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006"
+    ],
+    "relevant_chunk_ids": [
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+    ],
+    "failure_type": "chunk_boundary_or_ranking_problem",
+    "detail": "Both BM25 and dense retrieval found the gold chunk in their top 20, but it was ranked outside the final top-k after fusion/reranking."
+  },
+  {
+    "query_id": "p006",
+    "category": "cross_document",
+    "modality": "text",
+    "recall_at_5": 0.6666666666666666,
+    "reciprocal_rank": 0.25,
+    "retrieved_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00002",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00002",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003"
+    ],
+    "relevant_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001"
+    ],
+    "failure_type": "chunk_boundary_or_ranking_problem",
+    "detail": "Both BM25 and dense retrieval found the gold chunk in their top 20, but it was ranked outside the final top-k after fusion/reranking."
+  },
+  {
+    "query_id": "p007",
+    "category": "factual",
+    "modality": "table",
+    "recall_at_5": 0.0,
+    "reciprocal_rank": 0.0,
+    "retrieved_chunk_ids": [
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00001",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00001",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::section::00000",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::section::00000",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00000"
+    ],
+    "relevant_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004"
+    ],
+    "failure_type": "chunk_boundary_or_ranking_problem",
+    "detail": "Both BM25 and dense retrieval found the gold chunk in their top 20, but it was ranked outside the final top-k after fusion/reranking."
+  },
+  {
+    "query_id": "p008",
+    "category": "multi_hop",
+    "modality": "text",
+    "recall_at_5": 0.5,
+    "reciprocal_rank": 1.0,
+    "retrieved_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00008",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006"
+    ],
+    "relevant_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00004"
+    ],
+    "failure_type": "chunk_boundary_or_ranking_problem",
+    "detail": "Both BM25 and dense retrieval found the gold chunk in their top 20, but it was ranked outside the final top-k after fusion/reranking."
+  },
+  {
+    "query_id": "p009",
+    "category": "comparison",
+    "modality": "text",
+    "recall_at_5": 0.8333333333333334,
+    "reciprocal_rank": 1.0,
+    "retrieved_chunk_ids": [
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+    ],
+    "relevant_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00003",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00001",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+    ],
+    "failure_type": "chunk_boundary_or_ranking_problem",
+    "detail": "Both BM25 and dense retrieval found the gold chunk in their top 20, but it was ranked outside the final top-k after fusion/reranking."
+  },
+  {
+    "query_id": "p011",
+    "category": "image",
+    "modality": "image",
+    "recall_at_5": 0.3333333333333333,
+    "reciprocal_rank": 1.0,
+    "retrieved_chunk_ids": [
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00008",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00001",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00001",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::section::00000",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00000"
+    ],
+    "relevant_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00008",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00007",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00008"
+    ],
+    "failure_type": "chunk_boundary_or_ranking_problem",
+    "detail": "Both BM25 and dense retrieval found the gold chunk in their top 20, but it was ranked outside the final top-k after fusion/reranking."
+  },
+  {
+    "query_id": "p012",
+    "category": "explanation",
+    "modality": "text",
+    "recall_at_5": 0.6666666666666666,
+    "reciprocal_rank": 1.0,
+    "retrieved_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::section::00005",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00004",
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00003"
+    ],
+    "relevant_chunk_ids": [
+      "2f52abc58a9216edcfc692613ed3a2ebec0b70affd88f245b167a204b2664103::chunk::00006",
+      "8a6c93d7d3e9fbd518edcf0b09442cf9294b8e18151be2be23737b9d52e92f85::chunk::00006",
+      "b8372e8ae3a5a41b6f0d8fac00e64e412ad09c60f366f99fd5beea7a02cf93bc::chunk::00003"
+    ],
+    "failure_type": "chunk_boundary_or_ranking_problem",
+    "detail": "Both BM25 and dense retrieval found the gold chunk in their top 20, but it was ranked outside the final top-k after fusion/reranking."
+  }
+]

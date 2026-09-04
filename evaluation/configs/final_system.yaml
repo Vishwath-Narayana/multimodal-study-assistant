@@ -1,0 +1,20 @@
+# Used for Phase 7I re-evaluation: same dataset/questions/metrics as
+# baseline.yaml, chunking_variant switched to whichever the 7F.2/7H
+# evidence-based decision selected. Do not change retrieval_configs,
+# top_k_values, or dataset_path between baseline and final runs — only the
+# improvement under test should differ (Phase 7H.1 change control).
+name: final_system
+dataset_path: evaluation/datasets/pilot_v1.json
+embedding_model: BAAI/bge-small-en-v1.5
+reranker_model: cross-encoder/ms-marco-MiniLM-L-6-v2
+retrieval_configs:
+  - A_bm25
+  - B_dense
+  - D_bm25_dense_simple_fusion
+  - E_hybrid_rrf
+  - H_hybrid_rrf_reranked
+top_k_values: [3, 5, 10, 20]
+rrf_k: 60
+seed: 42
+output_dir: evaluation/results
+chunking_variant: bge_aware

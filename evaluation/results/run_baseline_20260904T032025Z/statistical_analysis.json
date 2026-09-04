@@ -1,0 +1,62 @@
+[
+  {
+    "metric": "reciprocal_rank",
+    "n": 12,
+    "mean_a": 0.8541666666666666,
+    "mean_b": 0.7777777777777778,
+    "mean_diff": -0.07638888888888884,
+    "test": "wilcoxon_signed_rank",
+    "statistic": 4.0,
+    "p_value": 0.75,
+    "significant_at_0_05": false,
+    "note": "n=12 is small; only 4 of 12 pairs differ, which limits power. Treat this as a directional signal, not a strong significance claim."
+  },
+  {
+    "metric": "recall_at_5",
+    "n": 12,
+    "mean_a": 0.6805555555555555,
+    "mean_b": 0.7638888888888888,
+    "mean_diff": 0.08333333333333337,
+    "test": "wilcoxon_signed_rank",
+    "statistic": 1.0,
+    "p_value": 0.25,
+    "significant_at_0_05": false,
+    "note": "n=12 is small; only 4 of 12 pairs differ, which limits power. Treat this as a directional signal, not a strong significance claim."
+  },
+  {
+    "metric": "precision_at_5",
+    "n": 12,
+    "mean_a": 0.43333333333333335,
+    "mean_b": 0.4666666666666666,
+    "mean_diff": 0.03333333333333327,
+    "test": "wilcoxon_signed_rank",
+    "statistic": 2.0,
+    "p_value": 0.5,
+    "significant_at_0_05": false,
+    "note": "n=12 is small; only 4 of 12 pairs differ, which limits power. Treat this as a directional signal, not a strong significance claim."
+  },
+  {
+    "metric": "ndcg_at_5",
+    "n": 12,
+    "mean_a": 0.7056521906969165,
+    "mean_b": 0.7234225483617402,
+    "mean_diff": 0.01777035766482371,
+    "test": "wilcoxon_signed_rank",
+    "statistic": 10.0,
+    "p_value": 1.0,
+    "significant_at_0_05": false,
+    "note": "n=12 is small; only 6 of 12 pairs differ, which limits power. Treat this as a directional signal, not a strong significance claim."
+  },
+  {
+    "metric": "hit_rate_at_5",
+    "n": 12,
+    "mean_a": 0.9166666666666666,
+    "mean_b": 0.9166666666666666,
+    "mean_diff": 0.0,
+    "test": "wilcoxon_signed_rank",
+    "statistic": null,
+    "p_value": null,
+    "significant_at_0_05": null,
+    "note": "All paired differences are zero \u2014 Wilcoxon is undefined; no measurable difference to test."
+  }
+]

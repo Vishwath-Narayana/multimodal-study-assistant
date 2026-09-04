@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-09-04T03:20:25.224204+00:00",
+  "git_commit": "80c43273c0631304c49a8e39deb7e7b417b3c05f",
+  "git_branch": "feature/evaluation-benchmarking",
+  "python_version": "3.12.13",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "dataset_id": "pilot_v1",
+  "dataset_stats": {
+    "question_count": 14,
+    "document_count": 3,
+    "answerable_count": 12,
+    "unanswerable_count": 2,
+    "by_category": {
+      "factual": 3,
+      "definition": 1,
+      "table": 2,
+      "cross_document": 1,
+      "multi_hop": 1,
+      "comparison": 1,
+      "explanation": 2,
+      "image": 1,
+      "unanswerable": 2
+    },
+    "by_modality": {
+      "text": 10,
+      "table": 3,
+      "image": 1
+    }
+  },
+  "seed": 42,
+  "availability": {
+    "sentence_transformers": {
+      "available": true,
+      "detail": "6.0.1"
+    },
+    "faiss": {
+      "available": true,
+      "detail": "importable"
+    },
+    "ollama": {
+      "available": false,
+      "detail": "`ollama` binary not found on PATH"
+    },
+    "tesseract": {
+      "available": false,
+      "detail": "`tesseract` binary not found on PATH"
+    },
+    "faster_whisper": {
+      "available": true,
+      "detail": "importable"
+    }
+  }
+}

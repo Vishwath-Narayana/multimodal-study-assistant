@@ -17,7 +17,7 @@ in the repository's development instructions).
 | 8 | ~~Evidence sufficiency + abstention~~ (merged into Phase 3) | — |
 | 9 | ~~Contradiction detection~~ (merged into Phase 3) | — |
 | 10 | Frontend integration | ✅ Complete |
-| 11 | Evaluation + ablation | Not started |
+| 11 | Evaluation + ablation | 🟡 Partial (retrieval evaluation/ablation complete; generation-dependent evaluation blocked — see below) |
 | 12 | Security + hardening | Not started |
 | 13 | Final experiments | Not started |
 | 14 | Research documentation | Not started |
@@ -149,3 +149,32 @@ retrieval/generation/grounding/citation/study-engine algorithm was
 modified. No authentication, deployment, learner analytics, spaced
 repetition, or gamification are implemented in Phase 10 — see
 docs/architecture/frontend.md "Known Limitations".
+
+Phase 11 scope (implemented as "Phase 7 — Evaluation & Benchmarking"
+against the implementation brief this work was built from — see
+[docs/evaluation/PHASE_7_EVALUATION_REPORT.md](evaluation/PHASE_7_EVALUATION_REPORT.md)):
+a real evaluation package (`backend/app/benchmarking/`) with a versioned
+YAML config system, a reproducibility manifest (git SHA/branch, dataset
+stats, seed, real dependency-availability checks), a Phase 7B.1 benchmark
+schema, and a small honest pilot dataset (`evaluation/datasets/
+pilot_v1.json`, 14 questions built from the real Phase 1 fixtures — no
+other real academic corpus was available in this environment, see
+[docs/evaluation/DATASET.md](evaluation/DATASET.md)); real, measured
+retrieval evaluation and ablation (BM25/dense/simple-fusion/RRF/
+reranker, top-k sweep, a controlled chunking experiment) against that
+dataset; failure analysis; an evidence-based improvement recommendation
+(adopt reranking; chunking change evaluated and explicitly not adopted);
+a baseline-vs-final comparison with paired Wilcoxon significance testing
+and CPU latency measurement; generated figures/tables; and four new
+`docs/evaluation/*.md` documents. One small, additive, backward-
+compatible change was made to existing code:
+`ChunkingConfig.token_counter` (`app/ingestion/chunking.py`), needed to
+run the controlled chunking experiment — no retrieval, generation, or
+grounding algorithm was modified. **Generation, HyDE, faithfulness,
+citation validity, token grounding on live output, evidence-sufficiency/
+abstention, contradiction detection, and real multimodal (VLM/OCR/
+transcription) evaluation are NOT MEASURED** in this phase — Ollama,
+tesseract, and a real transcription/VLM run are not available in this
+environment; see the evaluation report's "Limitations" and "Future Work"
+for exactly what remains blocked and how to unblock it. No Phase 1-6
+algorithm, endpoint, or UI was modified.

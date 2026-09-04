@@ -1,0 +1,9 @@
+# Baseline (E) vs Final (H, +reranker)
+
+| metric | baseline_E_hybrid_rrf | final_H_hybrid_rrf_reranked | delta | wilcoxon_p_value | significant_at_0.05 |
+|---|---|---|---|---|---|
+| reciprocal_rank | 0.8542 | 0.7778 | -0.0764 | 0.75 | False |
+| recall_at_5 | 0.6806 | 0.7639 | 0.0833 | 0.25 | False |
+| precision_at_5 | 0.4333 | 0.4667 | 0.0333 | 0.5 | False |
+| ndcg_at_5 | 0.7057 | 0.7234 | 0.0178 | 1.0 | False |
+| hit_rate_at_5 | 0.9167 | 0.9167 | 0.0 | N/A | None |
